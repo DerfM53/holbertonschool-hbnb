@@ -7,7 +7,7 @@ class User(BaseModel):
     EMAIL_REGEX = re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b')
 
 
-    def __init__(self, first_name, last_name, email, is_admin=False):
+    def __init__(self, first_name, last_name, email, password='password', is_admin=False):
         super().__init__()
         self._first_name = None
         self.first_name = first_name
@@ -16,6 +16,7 @@ class User(BaseModel):
         self._email = None
         self.email = email
         self._is_admin = is_admin
+        self.password = password
 
     @property
     def first_name(self):
