@@ -51,10 +51,16 @@ class PlaceList(Resource):
         # Créer la nouvelle place, en associant owner_id à l'utilisateur courant
         new_place = facade.create_place(place_data)
         new_place = facade.create_place(place_data)
-        return {'id': new_place.id, 'title': new_place.title, 'description': new_place.description,
-                'price': new_place.price, 'latitude': new_place.latitude, 'logitude': new_place.longitude,
-                'owner_id': new_place.owner_id
-                }, 201
+        return {
+        'id': new_place.id,
+        'title': new_place.title,
+        'description': new_place.description,
+        'price': new_place.price,
+        'latitude': new_place.latitude,
+        'longitude': new_place.longitude,
+        'owner': new_place.owner,
+        'amenities': new_place.amenities
+        }, 201
 
     @api.response(200, 'List of places retrieved successfully')
     def get(self):
@@ -62,13 +68,22 @@ class PlaceList(Resource):
         places = facade.get_all_places()
         if not places:
             return {'message': 'No place found'}, 400
-        return [
-                {'id': place.id, 'title': place.title, 'description': place.description,
-                'price': place.price, 'latitude': place.latitude, 'logitude': place.longitude,
-                'owner_id': place.owner_id
+
+        return {
+        'places': [
+            {
+                'id': place.id,
+                'title': place.title,
+                'description': place.description,
+                'price': place.price,
+                'latitude': place.latitude,
+                'longitude': place.longitude,
+                'owner': place.owner,
+                'amenities': place.amenities
             }
-                for place in places
-                ], 200
+            for place in places
+        ]
+         }, 200
 
 
 @api.route('/<place_id>')
@@ -80,10 +95,17 @@ class PlaceResource(Resource):
         place = facade.get_place(place_id)
         if not place:
             return {'error': 'Place not found'}
-        return {'id': place.id, 'title': place.title, 'description': place.description,
-                'price': place.price, 'latitude': place.latitude, 'logitude': place.longitude,
-                'owner_id': place.owner_id
-                }, 200
+
+        return {
+                'id': place.id,
+                'title': place.title,
+                'description': place.description,
+                'price': place.price,
+                'latitude': place.latitude,
+                'longitude': place.longitude,
+                'owner': place.owner,
+                'amenities': place.amenities
+        }
 
 
     @api.expect(place_model)
@@ -98,12 +120,17 @@ class PlaceResource(Resource):
         if not place_exists:
             return {'error': 'place not found'}, 404
 
-        updated_place = facade.update_place(place_exists, place_data)
+        updated_place = facade.update_place(place_id, place_data)
 
-        return {'id': updated_place.id, 'title': updated_place.title, 'description': updated_place.description,
-                'price': updated_place.price, 'latitude': updated_place.latitude, 'logitude': updated_place.longitude,
-                'owner_id': updated_place.owner_id
-                }, 201
+        return {
+            'id': updated_place['id'],
+            'title': updated_place['title'],
+            'description': updated_place['description'],
+            'latitude': updated_place['latitude'],
+            'longitude': updated_place['longitude'],
+            'owner': updated_place['owner'],
+            'amenities': updated_place['amenities']
+        }, 200
 
 @api.route('/user/<user_id>/places')
 class UserPlacesResource(Resource):
@@ -120,5 +147,6 @@ class UserPlacesResource(Resource):
             return {'message': 'No places found for this user'}, 200
 
         return [{'id': place.id, 'title': place.title, 'description': place.description,
-                 'price': place.price, 'latitude': place.latitude, 'longitude': place.longitude}
+                 'price': place.price, 'latitude': place.latitude, 'longitude': place.longitude,
+                 'owner': facade.get_user(place.owner_id)}
                 for place in places], 200

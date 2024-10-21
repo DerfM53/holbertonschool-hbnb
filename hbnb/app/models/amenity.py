@@ -6,12 +6,15 @@ import uuid
 class Amenity(BaseModel):
 
     amenities = []
-    def __init__(self, name):
+    def __init__(self, name, description):
         super().__init__()
         self.name = name
-        Amenity.amenities.append(self)
+        self.description = description
 
-    @classmethod
-
-    def get_aminities(cls):
-        return cls.amenities
+    def to_dict(self):
+        """Return a dictionary representation of the Amenity instance."""
+        return {
+            'id': self.id,  # Assuming BaseEntity provides an 'id' attribute
+            'name': self.name,
+            'description': self.description
+        }

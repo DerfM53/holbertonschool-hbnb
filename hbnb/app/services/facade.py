@@ -66,9 +66,13 @@ class HBnBFacade:
         return self.amenity_repo.get_all()
 
     def create_place(self, place_data):
+
         place = Place(**place_data)
+
         self.place_repo.add(place)
         return place
+
+
 
     def get_place(self, place_id):
         return self.place_repo.get(place_id)
@@ -76,12 +80,35 @@ class HBnBFacade:
     def get_all_places(self):
         return self.place_repo.get_all()
 
-    def update_place(self, place_id, place_data):
-        self.place_repo.update(place_id, place_data)
-        place_update = self.place_repo.get(place_id)
-        return place_update
 
-        # Récupérer tous les lieux appartenant à un utilisateur (owner_id)
+
+    def update_place(self, place_id, place_data):
+
+        place = self.place_repo.get(place_id)
+
+        if not place:
+            return {'error': 'Place not found'}, 404
+
+
+        for key, value in place_data.items():
+            if value is not None:
+                setattr(place, key, value)
+
+        self.place_repo.update(place_id, place_data)
+
+        return {
+            'id': place.id,
+            'title': place.title,
+            'description': place.description,
+            'latitude': place.latitude,
+            'longitude': place.longitude,
+            'owner': place.owner,
+            'amenities': place.amenities
+            }
+
+
+
+
     def get_places_by_user(self, user_id):
         return [place for place in self.place_repo.get_all() if place.owner_id == user_id]
 

@@ -9,17 +9,17 @@ if TYPE_CHECKING:
 
 class Place(BaseModel):
 
-    def __init__(self, title ,owner_id , description=None, latitude=0.0, price=0.0, longitude=0.0):
+    def __init__(self, title ,owner , description=None, latitude=0.0, price=0.0, longitude=0.0, amenities=None):
         super().__init__()
-        self.owner_id = owner_id
+        self.owner = owner
         self.title = title
         self.description = description
         self.price = set_price(price)
         self.latitude = set_latitude(latitude)
         self.longitude = set_longitude(longitude)
         self.reviews = []
-        self.amenities = []
-
+        self.amenities = amenities if amenities is not None else []
+        
     def add_review(self, review):
         """Add a review to the place."""
         self.reviews.append(review)
@@ -28,6 +28,23 @@ class Place(BaseModel):
         """Add an amenity to the place."""
         self.amenities.append(amenity)
 
+    def set_owner(self, owner_id):
+        from app.models.user import User  # Import dans le corps de la méthode
+        return User(owner_id)
+
+    def to_dict(self):
+        """Return a dictionary representation of the Place instance."""
+        return {
+            'id': self.id,
+            'title': self.title,
+            'description': self.description,
+            'price': self.price,
+            'latitude': self.latitude,
+            'longitude': self.longitude,
+            'owner': self.owner.to_dict() if self.owner else None,
+            'reviews': [review.to_dict() for review in self.reviews],
+            'amenities': [amenity.to_dict() for amenity in self.amenities]
+        }
 
 def validate_owner(owner):
     if not isinstance(owner, User):
@@ -58,4 +75,5 @@ def set_longitude(valid):
 
 def get_by_id(user_id):
     user = User.users.get(user_id)
+
 
