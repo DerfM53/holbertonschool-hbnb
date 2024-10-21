@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 class Place(BaseModel):
 
-    def __init__(self, title ,owner , description=None, latitude=0.0, price=0.0, longitude=0.0, amenities=None):
+    def __init__(self, title ,owner , description=None, latitude=0.0, price=0.0, longitude=0.0, amenities=None, reviews= None):
         super().__init__()
         self.owner = owner
         self.title = title
@@ -17,9 +17,9 @@ class Place(BaseModel):
         self.price = set_price(price)
         self.latitude = set_latitude(latitude)
         self.longitude = set_longitude(longitude)
-        self.reviews = []
+        self.reviews = reviews if reviews is not None else []
         self.amenities = amenities if amenities is not None else []
-        
+
     def add_review(self, review):
         """Add a review to the place."""
         self.reviews.append(review)

@@ -11,15 +11,25 @@ if TYPE_CHECKING:
 
 class Review(BaseModel):
 
-    def __init__(self, text, place, user, rating=0,):
+    def __init__(self, text, place_id, user_id, rating=0,):
         super().__init__()
-        self.place = place
-        self.user = user
+        self.place_id = place_id
+        self.user_id = user_id
 
         self.text = text
         self.rating = rating
 
-def check_User(self, author):
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'place_id': self.place_id,
+            'user_id': self.user_id,
+            'text': self.text,
+            'rating': self.rating
+        }
+
+def check_User(author):
     if not isinstance(author, User):
         raise TypeError("author must be a valid user instance")
     return (author)

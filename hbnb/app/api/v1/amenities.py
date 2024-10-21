@@ -68,4 +68,4 @@ class AmenityResource(Resource):
         return {
             'id': updated_amenity.id,
             'name': updated_amenity.name
-        }, 200
+        }, 201
