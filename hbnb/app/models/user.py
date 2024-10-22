@@ -2,6 +2,7 @@
 
 from . import BaseModel
 import re
+import uuid
 
 class User(BaseModel):
     EMAIL_REGEX = re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b')
@@ -9,6 +10,7 @@ class User(BaseModel):
 
     def __init__(self, first_name, last_name, email, password='password', is_admin=False):
         super().__init__()
+        self.id = str(uuid.uuid4())
         self._first_name = None
         self.first_name = first_name
         self._last_name = None
@@ -17,6 +19,14 @@ class User(BaseModel):
         self.email = email
         self._is_admin = is_admin
         self.password = password
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "email": self.email
+        }
 
     @property
     def first_name(self):

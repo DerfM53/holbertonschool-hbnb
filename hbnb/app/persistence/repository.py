@@ -31,10 +31,18 @@ class InMemoryRepository(Repository):
         self._storage = {}
 
     def add(self, obj):
+        if obj is None:
+            raise ValueError("Cannot add None object to repository")
+        if not hasattr(obj, 'id') or obj.id is None:
+            raise ValueError("Object must have an 'id' attribute")
         self._storage[obj.id] = obj
+        return obj
 
     def get(self, obj_id):
-        return self._storage.get(obj_id)
+        obj = self._storage.get(obj_id)
+        if obj is None:
+            print(f"Object with ID {obj_id} not found in repository")  # Log pour le débogage
+        return obj
 
     def get_all(self):
         return list(self._storage.values())
@@ -43,6 +51,7 @@ class InMemoryRepository(Repository):
         obj = self.get(obj_id)
         if obj:
             obj.update(data)
+        return obj
 
     def delete(self, obj_id):
         if obj_id in self._storage:

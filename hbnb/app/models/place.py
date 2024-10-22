@@ -4,7 +4,7 @@ from . import BaseModel
 from .user import User
 
 class Place(BaseModel):
-    def __init__(self, title, description, owner, price=0.0, latitude=0.0, longitude=0.0):
+    def __init__(self, title, description, owner_id, price=0.0, latitude=0.0, longitude=0.0):
         super().__init__()
         self._title = None
         self.title = title
@@ -15,10 +15,9 @@ class Place(BaseModel):
         self.latitude = latitude
         self._longitude = None
         self.longitude = longitude
-        self._owner = None
-        self.owner = owner
-        self.reviews = []  # List to store related reviews
-        self.amenities = []  # List to store related amenities
+        self._owner_id = owner_id
+        self.reviews = []
+        self.amenities = []
 
     @property
     def title(self):
@@ -65,16 +64,24 @@ class Place(BaseModel):
         self._longitude = float(value)
 
     @property
-    def owner(self):
-        return self._owner
+    def owner_id(self):
+        return self._owner_id
     
-    @owner.setter
-    def owner(self, value):
-        if not isinstance(value, User):
-            raise ValueError("Owner must be a User instance")
-        self._owner = value
-    
-        
+    @owner_id.setter
+    def owner_id(self, value):
+        self._owner_id = value
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "description": self.description,
+            "price": self.price,
+            "latitude": self.latitude,
+            "longitude": self.longitude,
+            "owner_id": self.owner_id
+        }
+
     def add_review(self, review):
         """Add a review to the place."""
         self.reviews.append(review)

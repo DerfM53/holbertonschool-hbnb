@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from flask_restx import Namespace, Resource, fields
-from app.services.facade import HBnBFacade
+from flask import current_app
 
 api = Namespace('users', description='User operations')
 
@@ -12,8 +12,6 @@ user_model = api.model('User', {
     'email': fields.String(required=True, description='Email of the user')
 })
 
-facade = HBnBFacade()
-
 @api.route('/')
 class UserList(Resource):
     @api.expect(user_model, validate=True)
@@ -22,23 +20,21 @@ class UserList(Resource):
     @api.response(400, 'Invalid input data')
     def post(self):
         """Register a new user"""
-        user_data = api.payload
+        try:
+            new_user = current_app.facade.create_user(api.payload)
+            return new_user.to_dict(), 201
+        except ValueError as e:
+            return {"error": str(e)}, 400
+        except Exception as e:
+            return {"error": "An unexpected error occurred"}, 500
 
-        # Simulate email uniqueness check (to be replaced by real validation with persistence)
-        existing_user = facade.get_user_by_email(user_data['email'])
-        if existing_user:
-            return {'error': 'Email already registered'}, 400
-
-        new_user = facade.create_user(user_data)
-        return {'id': new_user.id, 'first_name': new_user.first_name, 'last_name': new_user.last_name, 'email': new_user.email}, 201
-    
 @api.route('/<user_id>')
 class UserResource(Resource):
     @api.response(200, 'User details retrieved successfully')
     @api.response(404, 'User not found')
     def get(self, user_id):
         """Get user details by ID"""
-        user = facade.get_user(user_id)
+        user = current_app.facade.get_user(user_id)
         if not user:
             return {'error': 'User not found'}, 404
-        return {'id': user.id, 'first_name': user.first_name, 'last_name': user.last_name, 'email': user.email}, 200
+        return user.to_dict(), 200
