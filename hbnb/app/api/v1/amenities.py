@@ -23,7 +23,7 @@ class AmenityList(Resource):
             return {'error': 'amenity already exists'}, 400
 
         new_amenity = facade.create_amenity(amenity_data)
-        return {"id": new_amenity.id, "name": new_amenity.name}, 201
+        return {'message': 'amenity added'}, 201
 
     @api.response(200, 'List of amenities retrieved successfully')
     def get(self):

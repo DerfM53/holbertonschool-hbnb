@@ -70,7 +70,7 @@ def check_email(email):
 
 def validate_len(names):
     if not names:
-        raise TypeError("must enter")
+        raise TypeError("Invalid input data")
 
     if not isinstance(names, str):
         raise TypeError("{names} is not a validate name")

@@ -52,25 +52,24 @@ def validate_owner(owner):
     return owner
 
 def set_price(price):
-    if isinstance(price, float):
-        if price >= 0:
-            return price
+    if isinstance(price, (int, float)) and price > 0:
+        return price
     else:
-        raise ((TypeError, ValueError)(" price must be a number and superior to zero"))
+        raise TypeError("price must be a number and superior to zero")
 
 def set_latitude(valid):
     if isinstance(valid, (int, float)):
         if -90 <= valid  <= 90:
             return valid
     else:
-        raise ((TypeError, ValueError)(" must be a number betwen -90 and 90"))
+        raise ValueError (" must be a number betwen -90 and 90")
 
 def set_longitude(valid):
     if isinstance(valid, (int, float)):
         if -180 <= valid  <= 180:
             return valid
     else:
-        raise ((TypeError, ValueError)(" must be a number betwen -90 and 90"))
+        raise ValueError (" must be a number betwen -90 and 90")
 
 
 def get_by_id(user_id):

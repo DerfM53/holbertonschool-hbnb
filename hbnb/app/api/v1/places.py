@@ -60,16 +60,7 @@ class PlaceList(Resource):
         # Créer la nouvelle place, en associant owner_id à l'utilisateur courant
         new_place = facade.create_place(place_data)
         new_place = facade.create_place(place_data)
-        return {
-        'id': new_place.id,
-        'title': new_place.title,
-        'description': new_place.description,
-        'price': new_place.price,
-        'latitude': new_place.latitude,
-        'longitude': new_place.longitude,
-        'owner': new_place.owner,
-        'amenities': new_place.amenities
-        }, 201
+        return {'message': 'place created successufully'}, 201
 
     @api.response(200, 'List of places retrieved successfully')
     def get(self):
@@ -88,7 +79,8 @@ class PlaceList(Resource):
                 'latitude': place.latitude,
                 'longitude': place.longitude,
                 'owner': place.owner,
-                'amenities': place.amenities
+                'amenities': place.amenities,
+                'reviews': place.reviews
             }
             for place in places
         ]
@@ -113,7 +105,8 @@ class PlaceResource(Resource):
                 'latitude': place.latitude,
                 'longitude': place.longitude,
                 'owner': place.owner,
-                'amenities': place.amenities
+                'amenities': place.amenities,
+                'reviews': place.reviews
         }
 
 
@@ -138,7 +131,8 @@ class PlaceResource(Resource):
             'latitude': updated_place['latitude'],
             'longitude': updated_place['longitude'],
             'owner': updated_place['owner'],
-            'amenities': updated_place['amenities']
+            'amenities': updated_place['amenities'],
+            'reviews': updated_place['reviews']
         }, 200
 
 @api.route('/user/<user_id>/places')

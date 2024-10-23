@@ -27,10 +27,13 @@ class UserList(Resource):
         existing_user = facade.get_user_by_email(user_data['email'])
         if existing_user:
             return {'error': 'Email already registered'}, 400
-
-        new_user = facade.create_user(user_data)
-        return {'id': new_user.id, 'first_name': new_user.first_name,
-                        'last_name': new_user.last_name, 'email': new_user.email}, 201
+        try:
+            new_user = facade.create_user(user_data)
+            return {"message": "User created successfully"}, 201
+        except TypeError as e:
+            return {"error": str(e)}, 400
+        except Exception as e:
+            return {"error": "Invalid input data"}, 500
 
     @api.response(200, 'List of users retrieved successfully')
     def get(self):

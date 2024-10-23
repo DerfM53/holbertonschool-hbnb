@@ -17,7 +17,7 @@ class Review(BaseModel):
         self.user_id = user_id
 
         self.text = text
-        self.rating = rating
+        self.rating = check_rating(rating)
 
 
     def to_dict(self):
@@ -39,5 +39,8 @@ def check_owner(self, owner):
     if not isinstance(owner, User):
         raise TypeError("Owner must be a valid user instance")
 
-
+def check_rating(rating):
+    if not isinstance(rating, int) or not (1 <= rating <= 5):
+        raise TypeError ("rating must be a number betwen 1 and 5")
+    return rating
 
