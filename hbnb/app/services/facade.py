@@ -58,7 +58,7 @@ class HBnBFacade:
 
     def get_all_amenities(self):
     # Placeholder for logic to retrieve all amenities
-        return self.amenity_repo.get_all()
+        return self.amenity_repo.get_all    ()
 
     def update_amenity(self, amenity_id, amenity_data):
     # Placeholder for logic to update an amenity
@@ -134,8 +134,12 @@ class HBnBFacade:
         return self.review_repo.get_all()
 
     def get_reviews_by_place(self, place_id):
-        # Placeholder for logic to retrieve all reviews for a specific place
-        return [review for review in self.get_place(place_id) if review.place_id == place_id]
+
+        all_reviews = self.get_all_reviews()  
+
+
+        return [review for review in all_reviews if review.place_id == place_id]
+
 
     def update_review(self, review_id, review_data):
         # Placeholder for logic to update a review
