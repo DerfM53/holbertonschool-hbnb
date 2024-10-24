@@ -9,12 +9,6 @@ amenity_model = api.model('Amenity', {
     'name': fields.String(required=True, description='Name of the amenity')
 })
 
-@api.route('/')
-class SomeResource(Resource):
-    def post(self):
-        # Utilisez current_app.facade au lieu de créer une nouvelle instance
-        new_item = current_app.facade.create_something(api.payload)
-        return new_item, 201
 
 @api.route('/')
 class AmenityList(Resource):
@@ -25,7 +19,7 @@ class AmenityList(Resource):
         """Register a new amenity"""
         try:
             new_amenity = current_app.facade.create_amenity(api.payload)
-            return new_amenity.to_dict(), 201
+            return {"message": "Amenity created successfully", "data": new_amenity.to_dict()}, 201
         except ValueError as e:
             return {"error": str(e)}, 400
         except Exception as e:

@@ -36,7 +36,7 @@ class User(BaseModel):
     
     @first_name.setter
     def first_name(self, value):
-        if not isinstance(value, str()) or value.strip() == "":
+        if not isinstance(value, str) or value.strip() == "":
             raise TypeError("Please enter your first name!")
         if len(value) > 50:
             raise ValueError("Max 50 characters for your first_name!")
