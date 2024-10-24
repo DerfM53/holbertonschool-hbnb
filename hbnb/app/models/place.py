@@ -79,7 +79,11 @@ class Place(BaseModel):
             "price": self.price,
             "latitude": self.latitude,
             "longitude": self.longitude,
-            "owner_id": self.owner_id
+            "owner_id": self.owner_id,
+            "amenities": self.amenities,
+            "reviews": self.reviews,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat()
         }
 
     def add_review(self, review):

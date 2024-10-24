@@ -25,7 +25,9 @@ class User(BaseModel):
             "id": self.id,
             "first_name": self.first_name,
             "last_name": self.last_name,
-            "email": self.email
+            "email": self.email,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat()
         }
 
     @property
@@ -34,8 +36,8 @@ class User(BaseModel):
     
     @first_name.setter
     def first_name(self, value):
-        if value is None or value.strip() == "":
-            raise ValueError("Please enter your first name!")
+        if not isinstance(value, str()) or value.strip() == "":
+            raise TypeError("Please enter your first name!")
         if len(value) > 50:
             raise ValueError("Max 50 characters for your first_name!")
         self._first_name = value.strip()
@@ -46,7 +48,7 @@ class User(BaseModel):
     
     @last_name.setter
     def last_name(self, value):
-        if value is None or value.strip() == "":
+        if not isinstance(value, str) or value.strip() == "":
             raise ValueError("Please enter your last name!")
         if len(value) > 50:
             raise ValueError("Max 50 characters for your last name!")
