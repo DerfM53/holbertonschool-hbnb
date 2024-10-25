@@ -1,3 +1,10 @@
+#!/usr/bin/python3
+"""
+This module handles API endpoints related to places.
+It defines routes for creating, retrieving, and updating places.
+"""
+
+
 from flask_restx import Namespace, Resource, fields
 from app.services.facade import HBnBFacade
 from flask import current_app
@@ -48,6 +55,7 @@ class PlaceList(Resource):
     @api.response(201, 'Place successfully created')
     @api.response(400, 'Invalid input data')
     @api.response(404, 'Owner not found')
+
     def post(self):
         """Register a new place"""
         place_data = api.payload
@@ -58,9 +66,6 @@ class PlaceList(Resource):
         )
         if existing_place:
             return {'error': 'place already exists'}, 400
-
-        place_data['amenities'] = [amenity.to_dict() for amenity in amenities_data]  # Assure que amenities sont des dictionnaires
-
 
         # Creat new place, associating owner_id to current user
         facade.create_place(place_data)
@@ -79,6 +84,10 @@ class PlaceList(Resource):
 
 @api.route('/<place_id>')
 class PlaceResource(Resource):
+    """
+    Resource for handling operations on the collection of places.
+    """
+
     @api.response(200, 'Place details retrieved successfully')
     @api.response(404, 'Place not found')
     def get(self, place_id):
@@ -116,6 +125,8 @@ class PlaceResource(Resource):
 
 @api.route('/user/<user_id>/places')
 class UserPlacesResource(Resource):
+
+
     @api.response(200, 'Places retrieved successfully')
     @api.response(404, 'User not found')
     def get(self, user_id):

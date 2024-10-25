@@ -1,4 +1,10 @@
 #!/usr/bin/python3
+
+"""
+This module defines the Place model.
+"""
+
+
 from . import BaseModel
 from datetime import datetime
 from typing import TYPE_CHECKING
@@ -8,6 +14,9 @@ if TYPE_CHECKING:
     from models.amenity import Amenity
 
 class Place(BaseModel):
+    """
+    Represents a place class to creat place objects.
+    """
 
     def __init__(self, title ,owner_id , description=None, latitude=0.0, price=0.0, longitude=0.0, amenities=None, reviews= None):
         super().__init__()
@@ -45,6 +54,7 @@ class Place(BaseModel):
             'updated_at': self.updated_at.isoformat()
         }
 
+    """  functions to handle types data """
 
 
 def set_price(price):

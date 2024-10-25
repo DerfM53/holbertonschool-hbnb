@@ -1,4 +1,9 @@
 #!/usr/bin/python3
+
+"""
+This module defines the User model.
+"""
+
 from . import BaseModel
 import re
 
@@ -9,6 +14,9 @@ if TYPE_CHECKING:
 
 
 class User(BaseModel):
+    """
+    class user to creat user object
+    """
 
     users = []
     places = []
@@ -56,6 +64,9 @@ class User(BaseModel):
         """Retourne la liste de tous les utilisateurs sous forme de dictionnaire."""
         return cls.users
 
+"""
+functions to handle data type input
+"""
 
 def check_email(email):
     regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'

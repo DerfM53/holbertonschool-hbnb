@@ -1,9 +1,17 @@
 #!/usr/bin/python3
+
+"""
+This module defines the Amenity model.
+"""
+
 from . import BaseModel
 
 import uuid
 
 class Amenity(BaseModel):
+    """
+    Represents an amenity class, to creat amenity object.
+    """
 
     amenities = []
     def __init__(self, name):

@@ -1,3 +1,11 @@
+#!/usr/bin/python3
+
+"""
+This module handles API endpoints related to users.
+It defines routes for creating and retrieving user information.
+"""
+
+
 from flask_restx import Namespace, Resource, fields
 from app.services.facade import HBnBFacade
 from flask import jsonify
@@ -15,6 +23,10 @@ user_model = api.model('User', {
 
 @api.route('/')
 class UserList(Resource):
+    """
+    Resource for handling operations on the collection of users.
+    """
+
     @api.expect(user_model, validate=True)
     @api.response(201, 'User successfully created')
     @api.response(400, 'Email already registered')
@@ -47,6 +59,10 @@ class UserList(Resource):
 
 @api.route('/<user_id>')
 class UserResource(Resource):
+    """
+    Resource for handling operations on individual users.
+    """
+
     @api.response(200, 'User details retrieved successfully')
     @api.response(404, 'User not found')
     def get(self, user_id):

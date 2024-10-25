@@ -1,4 +1,9 @@
 #!/usr/bin/python3
+
+"""
+This module defines the review model.
+"""
+
 from typing import TYPE_CHECKING
 from . import BaseModel
 import uuid
@@ -10,6 +15,9 @@ if TYPE_CHECKING:
 
 
 class Review(BaseModel):
+    """
+    class review to creat review objects
+    """
 
     def __init__(self, text, place_id, user_id, rating=0,):
         super().__init__()

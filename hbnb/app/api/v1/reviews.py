@@ -1,3 +1,10 @@
+#!/usr/bin/python3
+
+"""
+This module handles API endpoints related to reviews.
+It defines routes for creating, retrieving, updating, and deleting reviews.
+"""
+
 from flask_restx import Namespace, Resource, fields
 from app.services.facade import HBnBFacade
 from app.services import facade
@@ -48,10 +55,16 @@ class ReviewList(Resource):
 
 @api.route('/<review_id>')
 class ReviewResource(Resource):
+    """
+    Resource for handling operations on the collection of reviews.
+    """
+
     @api.response(200, 'Review details retrieved successfully')
     @api.response(404, 'Review not found')
+
     def get(self, review_id):
         """Get review details by ID"""
+
         review = facade.get_review(review_id)
         if not review:
             return {'message: Review not found'}
@@ -67,8 +80,10 @@ class ReviewResource(Resource):
     @api.response(200, 'Review updated successfully')
     @api.response(404, 'Review not found')
     @api.response(400, 'Invalid input data')
+
     def put(self, review_id):
         """Update a review's information"""
+
         review_data = api.payload
         review = facade.get_review(review_id)
         if not review:
@@ -96,6 +111,11 @@ class ReviewResource(Resource):
 
 @api.route('/places/<place_id>/reviews')
 class PlaceReviewList(Resource):
+    """
+    Resource for handling operations on reviews for a specific place.
+    """
+
+
     @api.response(200, 'List of reviews for the place retrieved successfully')
     @api.response(404, 'Place not found')
     def get(self, place_id):
