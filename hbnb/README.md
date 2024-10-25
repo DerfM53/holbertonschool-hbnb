@@ -63,7 +63,9 @@ The API is accessible at `http://localhost:5000/`. The Swagger documentation for
 - Create a user: `POST /api/v1/users/`
 - Retrieve a user: `GET /api/v1/users/<user_id>`
 - Create a place: `POST /api/v1/places/`
-- Retrieve all places: `GET /api/v1/places/`
+- Create amenity: `POST /api/v1/amenities/`
+- Retrieve all amenities: `GET /api/v1/amenities/`
+- Create review: `POST /api/v1/reviews/`
 
 ## Objective
 
