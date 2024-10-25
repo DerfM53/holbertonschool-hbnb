@@ -1,6 +1,6 @@
 from flask_restx import Namespace, Resource, fields
 from app.services.facade import HBnBFacade
-
+from app.services import facade
 api = Namespace('amenities', description='Amenity operations')
 
 # Define the amenity model for input validation and documentation
@@ -8,7 +8,7 @@ amenity_model = api.model('Amenity', {
     'name': fields.String(required=True, description='Name of the amenity')
 })
 
-facade = HBnBFacade()
+
 
 @api.route('/')
 class AmenityList(Resource):
@@ -30,13 +30,7 @@ class AmenityList(Resource):
         all_amenities = facade.get_all_amenities()
         if not all_amenities:
             return {'message': 'No ameneties found'}, 404
-        return [
-        {
-        "id": amenity.id,
-        "name": amenity.name
-        }
-        for amenity in all_amenities
-        ], 200
+        return [amenity.amenity_to_dict() for amenity in all_amenities], 200
 
 @api.route('/<amenity_id>')
 class AmenityResource(Resource):
@@ -47,10 +41,7 @@ class AmenityResource(Resource):
         amenity = facade.get_amenity(amenity_id)
         if not amenity:
             return {'error': 'No amenity found'}, 404
-        return {
-            'id': amenity.id,
-            'name': amenity.name
-        }, 200
+        return amenity.amenity_to_dict(), 200
 
     @api.expect(amenity_model, validate=True)
     @api.response(200, 'Amenity updated successfully')
@@ -67,5 +58,7 @@ class AmenityResource(Resource):
         updated_amenity = facade.update_amenity(amenity_id, amenity_data)
         return {
             'id': updated_amenity.id,
-            'name': updated_amenity.name
+            'name': updated_amenity.name,
+            "created_at": amenity.created_at.isoformat(),
+            "updated_at": amenity.updated_at.isoformat()
         }, 201

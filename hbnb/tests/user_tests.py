@@ -35,7 +35,7 @@ class TestUserEndpoints(unittest.TestCase):
         "price":100,
         "latitude": 37.7749,
         "longitude": -122.4194,
-        "owner": {
+        "owner_id": {
         "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
         "first_name": "John",
         "last_name": "Doe",
@@ -72,12 +72,24 @@ class TestUserEndpoints(unittest.TestCase):
         self.assertIn('rating must be a number betwen 1 and 5', response.get_json()['error'])
 
     def test_update_user(self):
-        response = self.client.post('/api/v1/users/', json={
-            "first_name": "Jane",
+        # Création d'un utilisateur
+        create_response = self.client.post('/api/v1/users/', json={
+            "first_name": "lamine",
             "last_name": "Doe",
-            "email": "jane.doe@example.com"
+            "email": "lamine@example.com"
         })
-        self.assertEqual(response.status_code, 201)
-        self.assertIn('User created successfully', response.get_json()['message'])
+        self.assertEqual(create_response.status_code, 201)
+        user_id = create_response.get_json().get('id')
+        self.assertIsNotNone(user_id)
+
+        # Mise à jour de l'utilisateur
+        update_response = self.client.put(f'/api/v1/users/{user_id}', json={
+            "first_name": "Jane Updated",
+            "last_name": "Doe Updated",
+            "email": "jane.doe_updated@example.com"
+        })
+        self.assertEqual(update_response.status_code, 200)
+        self.assertIn('update is done', update_response.get_json()['message'])
+
 
 

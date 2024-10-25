@@ -9,9 +9,9 @@ if TYPE_CHECKING:
 
 class Place(BaseModel):
 
-    def __init__(self, title ,owner , description=None, latitude=0.0, price=0.0, longitude=0.0, amenities=None, reviews= None):
+    def __init__(self, title ,owner_id , description=None, latitude=0.0, price=0.0, longitude=0.0, amenities=None, reviews= None):
         super().__init__()
-        self.owner = owner
+        self.owner_id = owner_id
         self.title = title
         self.description = description
         self.price = set_price(price)
@@ -28,11 +28,8 @@ class Place(BaseModel):
         """Add an amenity to the place."""
         self.amenities.append(amenity)
 
-    def set_owner(self, owner_id):
-        from app.models.user import User  # Import dans le corps de la méthode
-        return User(owner_id)
 
-    def to_dict(self):
+    def place_to_dict(self):
         """Return a dictionary representation of the Place instance."""
         return {
             'id': self.id,
@@ -41,15 +38,14 @@ class Place(BaseModel):
             'price': self.price,
             'latitude': self.latitude,
             'longitude': self.longitude,
-            'owner': self.owner.to_dict() if self.owner else None,
-            'reviews': [review.to_dict() for review in self.reviews],
-            'amenities': [amenity.to_dict() for amenity in self.amenities]
+            'owner_id': self.owner_id,
+            'reviews': [review.review_to_dict() for review in self.reviews],
+            'amenities': [amenity.amenity_to_dict() for amenity in self.amenities],
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat()
         }
 
-def validate_owner(owner):
-    if not isinstance(owner, User):
-        raise TypeError("Owner must be a valid User instance.")
-    return owner
+
 
 def set_price(price):
     if isinstance(price, (int, float)) and price > 0:
@@ -70,9 +66,3 @@ def set_longitude(valid):
             return valid
     else:
         raise ValueError (" must be a number betwen -90 and 90")
-
-
-def get_by_id(user_id):
-    user = User.users.get(user_id)
-
-

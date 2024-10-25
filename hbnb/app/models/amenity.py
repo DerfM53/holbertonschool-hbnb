@@ -10,9 +10,11 @@ class Amenity(BaseModel):
         super().__init__()
         self.name = name
 
-    def to_dict(self):
+    def amenity_to_dict(self):
         """Return a dictionary representation of the Amenity instance."""
         return {
-            'id': self.id,  # Assuming BaseEntity provides an 'id' attribute
+            'id': self.id,
             'name': self.name,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat()
         }

@@ -1,5 +1,7 @@
 from flask_restx import Namespace, Resource, fields
 from app.services.facade import HBnBFacade
+from flask import current_app
+from app.services import facade
 
 
 api = Namespace('places', description='Place operations')
@@ -38,13 +40,14 @@ place_model = api.model('Place', {
     'reviews': fields.List(fields.Nested(review_model), description='List of reviews')
 })
 
-facade = HBnBFacade()
+
 
 @api.route('/')
 class PlaceList(Resource):
     @api.expect(place_model)
     @api.response(201, 'Place successfully created')
     @api.response(400, 'Invalid input data')
+    @api.response(404, 'Owner not found')
     def post(self):
         """Register a new place"""
         place_data = api.payload
@@ -56,10 +59,12 @@ class PlaceList(Resource):
         if existing_place:
             return {'error': 'place already exists'}, 400
 
+        place_data['amenities'] = [amenity.to_dict() for amenity in amenities_data]  # Assure que amenities sont des dictionnaires
 
-        # Créer la nouvelle place, en associant owner_id à l'utilisateur courant
-        new_place = facade.create_place(place_data)
-        new_place = facade.create_place(place_data)
+
+        # Creat new place, associating owner_id to current user
+        facade.create_place(place_data)
+
         return {'message': 'place created successufully'}, 201
 
     @api.response(200, 'List of places retrieved successfully')
@@ -69,22 +74,7 @@ class PlaceList(Resource):
         if not places:
             return {'message': 'No place found'}, 400
 
-        return {
-        'places': [
-            {
-                'id': place.id,
-                'title': place.title,
-                'description': place.description,
-                'price': place.price,
-                'latitude': place.latitude,
-                'longitude': place.longitude,
-                'owner': place.owner,
-                'amenities': place.amenities,
-                'reviews': place.reviews
-            }
-            for place in places
-        ]
-         }, 200
+        return [ place.place_to_dict() for place in places], 200
 
 
 @api.route('/<place_id>')
@@ -97,17 +87,7 @@ class PlaceResource(Resource):
         if not place:
             return {'error': 'Place not found'}
 
-        return {
-                'id': place.id,
-                'title': place.title,
-                'description': place.description,
-                'price': place.price,
-                'latitude': place.latitude,
-                'longitude': place.longitude,
-                'owner': place.owner,
-                'amenities': place.amenities,
-                'reviews': place.reviews
-        }
+        return place.place_to_dict()
 
 
     @api.expect(place_model)
@@ -125,15 +105,14 @@ class PlaceResource(Resource):
         updated_place = facade.update_place(place_id, place_data)
 
         return {
-            'id': updated_place['id'],
-            'title': updated_place['title'],
-            'description': updated_place['description'],
-            'latitude': updated_place['latitude'],
-            'longitude': updated_place['longitude'],
-            'owner': updated_place['owner'],
-            'amenities': updated_place['amenities'],
-            'reviews': updated_place['reviews']
-        }, 200
+        'title': updated_place.title,
+        'description': updated_place.description,
+        'latitude': updated_place.latitude,
+        'longitude': updated_place.longitude,
+        'owner_id': updated_place.owner_id,
+        'created_at': updated_place.created_at.isoformat(),
+        'updated_at': updated_place.updated_at.isoformat()
+    }, 200
 
 @api.route('/user/<user_id>/places')
 class UserPlacesResource(Resource):
@@ -149,7 +128,11 @@ class UserPlacesResource(Resource):
         if not places:
             return {'message': 'No places found for this user'}, 200
 
-        return [{'id': place.id, 'title': place.title, 'description': place.description,
-                 'price': place.price, 'latitude': place.latitude, 'longitude': place.longitude,
-                 'owner': facade.get_user(place.owner_id)}
+        return [{'id': place.id,
+                'title': place.title,
+                'description': place.description,
+                'price': place.price,
+                'latitude': place.latitude,
+                'longitude': place.longitude,
+                'owner': facade.get_user(place.owner_id)}
                 for place in places], 200

@@ -1,6 +1,7 @@
 from flask_restx import Namespace, Resource, fields
 from app.services.facade import HBnBFacade
 from flask import jsonify
+from app.services import facade
 
 api = Namespace('users', description='User operations')
 
@@ -11,7 +12,6 @@ user_model = api.model('User', {
     'email': fields.String(required=True, description='Email of the user')
 })
 
-facade = HBnBFacade()
 
 @api.route('/')
 class UserList(Resource):
@@ -28,7 +28,7 @@ class UserList(Resource):
         if existing_user:
             return {'error': 'Email already registered'}, 400
         try:
-            new_user = facade.create_user(user_data)
+            facade.create_user(user_data)
             return {"message": "User created successfully"}, 201
         except TypeError as e:
             return {"error": str(e)}, 400
@@ -39,19 +39,10 @@ class UserList(Resource):
     def get(self):
         """Get all users"""
 
-        users = facade.get_users()
+        users = facade.get_all_users()
         if not users:
             return {'message': 'No users found'}, 404
-        return [
-        {
-            'id': user.id,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'email': user.email
-        }
-        for user in users
-        ], 200
-
+        return [user.user_to_dict() for user in users], 200
 
 
 @api.route('/<user_id>')
@@ -63,12 +54,7 @@ class UserResource(Resource):
         user = facade.get_user(user_id)
         if not user:
             return {'error': 'User not found'}, 404
-        return {
-            'id': user.id,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'email': user.email
-        },201
+        return user.user_to_dict(), 201
 
 
     @api.expect(user_model, validate=True)
@@ -82,10 +68,13 @@ class UserResource(Resource):
         if not user_exists:
             return {'error': 'User not found'}, 404
 
-        updated_user = facade.update_user(user_exists, user_data)
+        updated_user = facade.update_user(user_id, user_data)
+
         return {
         'id': updated_user.id,
         'first_name': updated_user.first_name,
         'last_name': updated_user.last_name,
-        'email': updated_user.email
+        'email': updated_user.email,
+        'created_at': updated_user.created_at.isoformat(),
+        'updated_at': updated_user.updated_at.isoformat()
         }, 200

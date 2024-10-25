@@ -11,6 +11,7 @@ if TYPE_CHECKING:
 class User(BaseModel):
 
     users = []
+    places = []
 
     role_user = 'user'
     role_admin = 'admin'
@@ -22,10 +23,18 @@ class User(BaseModel):
         self.last_name = validate_len(last_name)
         self.email = check_email(email)
         self.is_admin = is_admin
-        self.places = []
-        self.reviews = []
+
         User.users.append(self)
 
+    def user_to_dict(self):
+        return {
+        'id': self.id,
+        'first_name': self.first_name,
+        'last_name': self.last_name,
+        'email': self.email,
+        'created_at': self.created_at.isoformat(),
+        'updated_at': self.updated_at.isoformat()
+    }
 
 
     def add_places(self, place):
@@ -46,19 +55,6 @@ class User(BaseModel):
     def get_all_users(cls):
         """Retourne la liste de tous les utilisateurs sous forme de dictionnaire."""
         return cls.users
-
-
-def user_to_dict(self):
-    user_dict = super().to_dict()
-    user_dict.update({'first_name': self.first_name,
-        'last_name': self.last_name,
-        'email': self.email,
-        'is_admin': self.is_admin,
-        'places': [place.id for place in self.places],
-        'reviews': [review.id for review in self.reviews],
-    })
-    return user_dict
-
 
 
 def check_email(email):
@@ -89,4 +85,3 @@ def valideate_passw(pw):
          return pw
     else:
         raise TypeError("not valid pass word")
-
