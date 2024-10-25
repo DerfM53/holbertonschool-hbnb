@@ -1,69 +1,74 @@
-# HbNb Application
+# HBnB - Holberton Bed and Breakfast
 
-## Business Logic Layer
+HBnB is a rental management application inspired by Airbnb. It allows users to create accounts, list properties, make reservations, and leave reviews.
 
-The business logic layer contains the core entities of our application. These entities represent the main concepts and operations of our vacation rental platform.
+## Architecture
 
-### User
+The application is structured as follows:
 
-The `User` class represents a user of our platform.
-
-Responsibilities:
-- Store user information (first name, last name, email)
-- Manage user authentication status
-
-Example usage:
-```python
-user = User("John", "Doe", "john.doe@example.com")
-print(user.full_name)  # Output: John Doe
-user.email = "new.email@example.com"  # This will validate the email format
-
-Place
-The Place class represents a rental property on our platform.
-Responsibilities:
-Store property information (title, description, price, location)
-Manage the relationship with the owner (User)
-Handle reviews and amenities associated with the property
-Example usage:
-
-owner = User("Alice", "Smith", "alice@example.com")
-place = Place("Cozy Cabin", "A beautiful cabin in the woods", owner, price=100.0, latitude=45.5, longitude=-122.6)
-place.add_amenity("WiFi")
-print(place.title)  # Output: Cozy Cabin
-
-Review
-The Review class represents a review left by a user for a specific place.
-Responsibilities:
-Store review content (text, rating)
-Manage the relationship with the user who wrote the review and the place being reviewed
-Example usage:
-
-user = User("Bob", "Johnson", "bob@example.com")
-place = Place("Beach House", "Lovely house by the sea", owner, price=150.0)
-review = Review("Great stay!", 5, place, user)
-place.add_review(review)
-print(len(place.reviews))  # Output: 1
-
-File Structure
-app/
-__init__.py: Configures the Flask application with placeholders.
-models/
-user.py: Defines the User class.
-place.py: Defines the Place class.
-review.py: Defines the Review class.
-persistence/
-repository.py: Implements the in-memory repository.
-services/
-facade.py: Plans the facade pattern with placeholders.
-run.py: Creates the entry point.
-config.py: Prepares the configuration.
-How to Use
-Create instances of User, Place, and Review as needed.
-Use the Facade (once implemented) to interact with the system in a simplified manner.
-The Repository will handle data persistence (currently in-memory).
-Note: This is a work in progress. Further implementations will include more detailed business logic, data validation, and integration with the web framework.
+hbnb/
+├── app/
+│ ├── init.py
+│ ├── api/
+│ │ ├── init.py
+│ │ ├── v1/
+│ │ ├── init.py
+│ │ ├── users.py
+│ │ ├── places.py
+│ │ ├── reviews.py
+│ │ ├── amenities.py
+│ ├── models/
+│ │ ├── init.py
+│ │ ├── user.py
+│ │ ├── place.py
+│ │ ├── review.py
+│ │ ├── amenity.py
+│ ├── services/
+│ │ ├── init.py
+│ │ ├── facade.py
+│ ├── persistence/
+│ ├── init.py
+│ ├── repository.py
+├── run.py
+├── config.py
+├── requirements.txt
+├── README.md
 
 
-This README now includes information about the business logic layer, describing the main entities (User, Place, Review) and their responsibilities. It also provides examples of how these classes can be used. The file structure section has been updated to include the new model files we've been working on. 
+## Features
 
-Remember to keep this README updated as you continue to develop your application, adding more details about new features, classes, or usage instructions as they are implemented.
+- User management (creation, retrieval)
+- Property management (creation, retrieval, updating)
+- Review management (creation, retrieval, updating, deletion)
+- Amenity management (creation, retrieval, updating)
+
+## Technologies Used
+
+- Python 3
+- Flask: Web framework
+- Flask-RESTX: Extension for creating RESTful APIs
+
+## Installation
+
+1. Clone this repository.
+2. Install the dependencies: `pip install -r requirements.txt`
+3. Run the application: `python run.py`
+
+## API Usage
+
+The API is accessible at `http://localhost:5000/`. The Swagger documentation for the API is available at `http://localhost:5000/`.
+
+### Example Endpoints:
+
+- Create a user: `POST /api/v1/users/`
+- Retrieve a user: `GET /api/v1/users/<user_id>`
+- Create a place: `POST /api/v1/places/`
+- Retrieve all places: `GET /api/v1/places/`
+
+## Contribution
+
+Contributions are welcome! Feel free to open an issue or submit a pull request.
+
+## License
+
+This project is licensed under the MIT License. See the `LICENSE` file for more details.

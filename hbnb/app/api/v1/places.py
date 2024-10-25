@@ -1,3 +1,10 @@
+#!/usr/bin/python3
+
+"""
+This module handles API endpoints related to places.
+It defines routes for creating, retrieving, and updating places.
+"""
+
 from flask_restx import Namespace, Resource, fields
 from app.services.facade import HBnBFacade
 from flask import current_app
@@ -41,12 +48,20 @@ place_model = api.model('Place', {
 
 @api.route('/')
 class PlaceList(Resource):
+    """
+    Resource for handling operations on the collection of places.
+    """
     @api.expect(place_model)
     @api.response(201, 'Place successfully created')
     @api.response(400, 'Invalid input data')
     @api.response(404, 'Owner not found')
     def post(self):
-        """Register a new place"""
+        """
+        Register a new place.
+        
+        Returns:
+            tuple: A tuple containing the created place data and the HTTP status code.
+        """
         try:
             place_data = api.payload
             new_place = current_app.facade.create_place(place_data)
@@ -61,7 +76,12 @@ class PlaceList(Resource):
 
     @api.response(200, 'List of places retrieved successfully')
     def get(self):
-        """Retrieve a list of all places"""
+        """
+        Retrieve a list of all places.
+        
+        Returns:
+            tuple: A tuple containing a list of places and the HTTP status code.
+        """
         all_places = current_app.facade.get_all_places()
         if not all_places:
             return {'message': 'No amenities found'}, 404
@@ -75,24 +95,42 @@ class PlaceList(Resource):
 
 @api.route('/<place_id>')
 class PlaceResource(Resource):
+    """
+    Resource for handling operations on individual places.
+    """
     @api.response(200, 'Place details retrieved successfully')
     @api.response(404, 'Place not found')
     def get(self, place_id):
-        """Get place details by ID"""
+        """
+        Get place details by ID.
+        
+        Args:
+            place_id (str): The ID of the place to retrieve.
+        
+        Returns:
+            tuple: A tuple containing the place data and the HTTP status code.
+        """
         place = current_app.facade.get_place(place_id)
         if not place:
             return {'error': 'No place found'}, 404
-        return {
-            'id': place.id,
-            'title': place.title
-        }, 200
+        place_data = place.to_dict()
+        place_data['reviews'] = [review.to_dict() for review in current_app.facade.get_reviews_by_place(place_id)]
+        return place_data, 200
 
     @api.expect(place_model)
     @api.response(200, 'Place updated successfully')
     @api.response(404, 'Place not found')
     @api.response(400, 'Invalid input data')
     def put(self, place_id):
-        """Update a place's information"""
+        """
+        Update a place's information.
+        
+        Args:
+            place_id (str): The ID of the place to update.
+        
+        Returns:
+            tuple: A tuple containing the updated place data and the HTTP status code.
+        """
         place_data = api.payload
         place = current_app.facade.get_place(place_id)
 
