@@ -65,10 +65,28 @@ The API is accessible at `http://localhost:5000/`. The Swagger documentation for
 - Create a place: `POST /api/v1/places/`
 - Retrieve all places: `GET /api/v1/places/`
 
+## Objective
+
+Develop a RESTful API with Flask that allows interaction with a database to manage entities such as Users, Places, Aménities and Reviews.
+
+## Advanced Features
+
+- User management with CRUD operations (Create, Read, Update).
+- Use of UUID to ensure unique user IDs.
+- Layered architecture to separate business logic and database interactions.
+- Compliance with REST standards for API endpoint structure.
+
+## Authors
+
+- **Fred Mieuzet** [GitHub](https://github.com/DerfM53)
+- **Mohamed Lamine Bouricha** [GitHub](https://github.com/Xdamix1991)
+- **Mehdi Zemihi** [GitHub](https://github.com/MrSandouiche2)
+
+
 ## Contribution
 
 Contributions are welcome! Feel free to open an issue or submit a pull request.
 
 ## License
 
-This project is licensed under the MIT License. See the `LICENSE` file for more details.
+This project is licensed under the MIT License.
