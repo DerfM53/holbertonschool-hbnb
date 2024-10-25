@@ -44,4 +44,6 @@ class Amenity(BaseModel):
             data (dict): A dictionary containing the attributes to update.
         """
         if 'name' in data:
-            self.name = data['name']
+            if not data['name'] or len(data['name']) > 100:
+                raise ValueError("Your name must be non-empty and not exceed 100 characters")
+        self.name = data['name']

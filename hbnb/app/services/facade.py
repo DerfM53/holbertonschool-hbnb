@@ -27,7 +27,20 @@ class HBnBFacade:
         return self.user_repo.get_by_attribute('email', email)
     
     def update_user(self, user_id, user_data):
-        return self.user_repo.update(user_id, user_data)
+        user = self.user_repo.get(user_id)
+        if not user:
+            raise ValueError("User not found")
+    
+        user.update(user_data)  # Utilise la méthode update du modèle User
+        return user
+    
+    def delete_user(self, user_id):
+        """Delete a user by ID."""
+        user = self.user_repo.get(user_id)
+        if not user:
+            return False
+        self.user_repo.delete(user_id)  # Supposons que votre dépôt a une méthode delete
+        return True
 
     def create_amenity(self, amenity_data):
         if 'name' not in amenity_data:
@@ -46,6 +59,14 @@ class HBnBFacade:
 
     def update_amenity(self, amenity_id, amenity_data):
         return self.amenity_repo.update(amenity_id, amenity_data)
+    
+    def delete_amenity(self, amenity_id):
+        """Delete an amenity by ID."""
+        amenity = self.amenity_repo.get(amenity_id)
+        if not amenity:
+            return False
+        self.amenity_repo.delete(amenity_id)  # Supposons que votre dépôt a une méthode delete
+        return True
     
     def create_place(self, place_data):
         owner_id = place_data.pop('owner_id')
@@ -66,23 +87,32 @@ class HBnBFacade:
         return self.place_repo.update(place_id, place_data)
 
     def create_review(self, review_data):
+        # Vérifiez si le texte est vide
+        if not review_data.get('text'):
+            raise ValueError("Text cannot be empty")
+
+        # Vérifiez si l'utilisateur et le lieu existent
         user = self.get_user(review_data['user_id'])
         place = self.get_place(review_data['place_id'])
         if not user or not place:
             raise ValueError("User or Place not found")
+    
+        # Vérifiez que la note est dans les limites
         if not 1 <= review_data['rating'] <= 5:
             raise ValueError("Rating must be between 1 and 5")
-    
+
+        # Créez la nouvelle revue
         new_review = Review(
             text=review_data['text'],
             rating=review_data['rating'],
             place_id=review_data['place_id'],
             user_id=review_data['user_id']
         )
-    
+
+        # Ajoutez la revue au dépôt
         self.review_repo.add(new_review)
         return new_review
-
+    
     def get_review(self, review_id):
         return self.review_repo.get(review_id)
 
@@ -112,3 +142,4 @@ class HBnBFacade:
             raise ValueError("Review not found")
         self.review_repo.delete(review_id)
         return True
+    

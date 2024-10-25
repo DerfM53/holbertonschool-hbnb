@@ -90,23 +90,27 @@ class AmenityResource(Resource):
     @api.response(404, 'Amenity not found')
     @api.response(400, 'Invalid input data')
     def put(self, amenity_id):
-        """
-        Update an amenity's information.
-        
-        Args:
-            amenity_id (str): The ID of the amenity to update.
-        
-        Returns:
-            tuple: A tuple containing the updated amenity data and the HTTP status code.
-        """
+        """Update an amenity's information"""
         amenity_data = api.payload
         amenity = current_app.facade.get_amenity(amenity_id)
 
         if not amenity:
             return {'error': 'Amenity not found'}, 404
 
+        # Validation pour le champ name
+        if 'name' in amenity_data and (not amenity_data['name'] or len(amenity_data['name']) > 100):
+            return {'error': "Your name must be non-empty and not exceed 100 characters"}, 400
+
         updated_amenity = current_app.facade.update_amenity(amenity_id, amenity_data)
         return {
             'id': updated_amenity.id,
             'name': updated_amenity.name
         }, 200
+    
+    @api.response(200, 'Amenity deleted successfully')
+    @api.response(404, 'Amenity not found')
+    def delete(self, amenity_id):
+        """Delete an amenity"""
+        if current_app.facade.delete_amenity(amenity_id):
+            return {'message': 'Amenity deleted successfully'}, 200
+        return {'error': 'Amenity not found'}, 404

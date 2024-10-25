@@ -27,18 +27,17 @@ class ReviewList(Resource):
     @api.response(201, 'Review successfully created')
     @api.response(400, 'Invalid input data')
     def post(self):
-        """
-        Register a new review.
-        
-        Returns:
-            tuple: A tuple containing the created review data and the HTTP status code.
-        """
+        """Register a new review."""
         data = api.payload
+        # Validation pour le texte de la revue
+        if not data.get('text'):
+            return {'error': 'Text cannot be empty'}, 400
+        
         try:
             review = current_app.facade.create_review(data)
             return review.to_dict(), 201
         except ValueError as e:
-            return {'message': str(e)}, 400
+            return {'error': str(e)}, 400
 
     @api.response(200, 'List of reviews retrieved successfully')
     def get(self):

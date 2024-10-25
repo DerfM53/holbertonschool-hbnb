@@ -67,7 +67,7 @@ class PlaceList(Resource):
             new_place = current_app.facade.create_place(place_data)
             return new_place.to_dict(), 201
         except ValueError as e:
-            return {"error": str(e)}, 404
+            return {"error": str(e)}, 400
         except KeyError as e:
             return {"error": f"Missing required field: {str(e)}"}, 400
         except Exception as e:

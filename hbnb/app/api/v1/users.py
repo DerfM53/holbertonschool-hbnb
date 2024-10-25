@@ -62,3 +62,27 @@ class UserResource(Resource):
         if not user:
             return {'error': 'User not found'}, 404
         return user.to_dict(), 200
+    
+    @api.expect(user_model, validate=True)
+    @api.response(200, 'User updated successfully')
+    @api.response(404, 'User not found')
+    @api.response(400, 'Invalid input data')
+    def put(self, user_id):
+        """Update a user's information"""
+        user_data = api.payload
+        user = current_app.facade.get_user(user_id)
+
+        if not user:
+            return {'error': 'User not found'}, 404
+
+        # Utilisez la méthode update_user de votre façade
+        updated_user = current_app.facade.update_user(user_id, user_data)
+        return updated_user.to_dict(), 200
+    
+    @api.response(200, 'User deleted successfully')
+    @api.response(404, 'User not found')
+    def delete(self, user_id):
+        """Delete a user"""
+        if current_app.facade.delete_user(user_id):
+            return {'message': 'User deleted successfully'}, 200
+        return {'error': 'User not found'}, 404
