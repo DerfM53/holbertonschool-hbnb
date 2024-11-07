@@ -48,8 +48,13 @@ class Place(BaseModel):
             'latitude': self.latitude,
             'longitude': self.longitude,
             'owner_id': self.owner_id,
-            'reviews': [review.review_to_dict() for review in self.reviews],
-            'amenities': [amenity.amenity_to_dict() for amenity in self.amenities],
+            'reviews': [
+            review.review_to_dict() if hasattr(review, 'review_to_dict') else review
+            for review in self.reviews
+            ],
+            'amenities': [
+            amenity.amenity_to_dict() if hasattr(amenity, 'amenity_to_dict') else amenity
+            for amenity  in self.amenities],
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat()
         }
