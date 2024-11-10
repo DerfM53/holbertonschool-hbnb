@@ -1,6 +1,4 @@
 #!/usr/bin/python3
-
-
 """
 This module defines the base model for all other models in the application.
 """
