@@ -1,0 +1,3 @@
+# Exclure tous les répertoires de cache Python
+__pycache__/
+*.py[cod]
