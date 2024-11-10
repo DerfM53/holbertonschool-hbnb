@@ -37,6 +37,7 @@ class User(BaseModel):
         from app import bcrypt
         """Hashes the password before storing it."""
         self.password = bcrypt.generate_password_hash(password).decode('utf-8')
+        return self.password
 
     def verify_password(self, password):
         from app import bcrypt
@@ -111,3 +112,8 @@ def valideate_passw(pw):
     else:
         raise TypeError("Password is not valid. It must be at least"
                          "8 characters long and contain both letters and numbers")
+
+def verify_password(self, password):
+    from app import bcrypt
+    """Verifies if the provided password matches the hashed password."""
+    return bcrypt.check_password_hash(self.password, password)
