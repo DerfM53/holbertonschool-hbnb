@@ -150,6 +150,13 @@ class HBnBFacade:
             return None
         return [review for review in self.review_repo.get_all() if review.place_id == place_id]
 
+    def get_review_by_user(self, user_id, place_id):
+
+        reviews = self.review_repo.get_all()
+        for review in reviews:
+            if review.user_id == user_id and review.place_id == place_id:
+                return review
+        return None
 
     def update_review(self, review_id, review_data):
         # Placeholder for logic to update a review

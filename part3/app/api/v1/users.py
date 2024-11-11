@@ -5,7 +5,7 @@ This module handles API endpoints related to users.
 It defines routes for creating and retrieving user information.
 """
 
-
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restx import Namespace, Resource, fields
 from app.services.facade import HBnBFacade
 from flask import jsonify
@@ -21,6 +21,11 @@ user_model = api.model('User', {
     'password': fields.String(required=True, description='password of the user')
 })
 
+# DEfine the update user for input
+user_model_update = api.model('UserUpdate', {
+    'first_name': fields.String(required=True, description='first name of the user'),
+    'last_name': fields.String(required=True, description='first name of the user')
+})
 
 @api.route('/')
 class UserList(Resource):
@@ -62,27 +67,36 @@ class UserResource(Resource):
     """
     Resource for handling operations on individual users.
     """
-
+    @jwt_required()
     @api.response(200, 'User details retrieved successfully')
     @api.response(404, 'User not found')
     def get(self, user_id):
         """Get user details by ID"""
+        current_user = get_jwt_identity()
         user = facade.get_user(user_id)
         if not user:
             return {'error': 'User not found'}, 404
+        if user.id != current_user['id']:
+            return {'message': 'Unauthorized action.'}, 403
         return user.user_to_dict(), 201
 
-
-    @api.expect(user_model, validate=True)
+    @jwt_required()
+    @api.expect(user_model_update, validate=True)
     @api.response(200, 'update is done')
     @api.response(404, 'User not found')
     @api.response(400, 'Invalid input data')
     def put(self, user_id):
+        """ edit user's information """
+        current_user = get_jwt_identity()
         user_data = api.payload
         user_exists = facade.get_user(user_id)
-
         if not user_exists:
             return {'error': 'User not found'}, 404
+        if user_exists.id != current_user['id']:
+            return {'message': 'Unauthorized action.'}, 403
+        # access denied to delete email or password
+        if 'email' in user_data or 'password' in user_data:
+            return {'error': 'You cannot modify email or password.'}, 400
 
         updated_user = facade.update_user(user_id, user_data)
 

@@ -4,7 +4,7 @@ This module handles API endpoints related to places.
 It defines routes for creating, retrieving, and updating places.
 """
 
-
+from flask_jwt_extended import jwt_required, get_jwt_identity, verify_jwt_in_request
 from flask_restx import Namespace, Resource, fields
 from app.services.facade import HBnBFacade
 from flask import current_app
@@ -50,6 +50,7 @@ place_model = api.model('Place', {
 
 @api.route('/')
 class PlaceList(Resource):
+    @jwt_required()
     @api.expect(place_model)
     @api.response(201, 'Place successfully created')
     @api.response(400, 'Invalid input data')
@@ -57,6 +58,7 @@ class PlaceList(Resource):
 
     def post(self):
         """Register a new place"""
+        current_user = get_jwt_identity()
         place_data = api.payload
         existing_place = facade.get_place_by_attributes(
             title=place_data['title'],
@@ -66,10 +68,13 @@ class PlaceList(Resource):
         if existing_place:
             return {'error': 'place already exists'}, 400
 
+        #associating user id to owner id
+        place_data['owner_id'] = current_user['id']
         # Creat new place, associating owner_id to current user
-        facade.create_place(place_data)
+        new_place = facade.create_place(place_data)
 
-        return {'message': 'place created successufully'}, 201
+        return {'place_id': new_place.id,
+            'message': 'place created successufully'}, 201
 
     @api.response(200, 'List of places retrieved successfully')
     def get(self):
@@ -97,13 +102,19 @@ class PlaceResource(Resource):
 
         return place.place_to_dict()
 
-
+    @jwt_required()
     @api.expect(place_model)
     @api.response(200, 'Place updated successfully')
     @api.response(404, 'Place not found')
     @api.response(400, 'Invalid input data')
     def put(self, place_id):
         """Update a place's information"""
+        current_user = get_jwt_identity()
+        print(current_user)
+        place = facade.get_place(place_id)
+        if place.owner_id != current_user['id']:
+            return {'error': 'Unauthorized action'}, 403
+
         place_data = api.payload
         place_exists = facade.get_place(place_id)
 
@@ -115,6 +126,7 @@ class PlaceResource(Resource):
         return {
         'title': updated_place.title,
         'description': updated_place.description,
+        'price': updated_place.price,
         'latitude': updated_place.latitude,
         'longitude': updated_place.longitude,
         'owner_id': updated_place.owner_id,
