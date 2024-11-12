@@ -86,6 +86,9 @@ class HBnBFacade:
     def get_all_places(self):
         return self.place_repo.get_all()
 
+    def delete_place(self, place_id):
+        self.place_repo.delete(place_id)
+
 # fuctions to update places
 
     def update_place(self, place_id, place_data):

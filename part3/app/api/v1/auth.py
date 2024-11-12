@@ -39,7 +39,10 @@ class ProtectedResource(Resource):
     def get(self):
         """A protected endpoint that requires a valid JWT token"""
         current_user = get_jwt_identity()  # Retrieve the user's identity from the token
-        return {'message': f'Hello, user {current_user["id"]}'}, 200
+        if current_user['is_admin'] == False:
+            return {'message': f'Hello, user {current_user["id"]}'}, 200
+        if current_user['is_admin'] == True:
+            return {'message': f'Hello, Admin user {current_user["id"]}'}, 200
 
 def verify_password(password):
     from app import bcrypt
