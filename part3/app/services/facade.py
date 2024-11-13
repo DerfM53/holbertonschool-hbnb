@@ -15,7 +15,8 @@ class HBnBFacade:
 #handling user facade
 
     def create_user(self, user_data):
-        user = User(**user_data)
+        is_admin = user_data.pop('is_admin', False)
+        user = User(**user_data, is_admin=is_admin)
         self.user_repo.add(user)
         return user
 
@@ -32,17 +33,42 @@ class HBnBFacade:
 
 
     def update_user(self, user_id, user_data):
-        """updated a user."""
+        """Update a user's information."""
         user = self.user_repo.get(user_id)
+        if not user:
+            return None
+
+    # met a jour champs existant
         if 'first_name' in user_data:
             user.first_name = user_data['first_name']
         if 'last_name' in user_data:
             user.last_name = user_data['last_name']
         if 'email' in user_data:
             user.email = user_data['email']
+
+    # gestion mdp
+        if 'password' in user_data:
+            user.password = User.hash_password(user_data['password'])
+
+    # ajout gestion statut admin
+        if 'is_admin' in user_data:
+            user.is_admin = user_data['is_admin']
+
+    # met a jour tout les autres champs
+        for key, value in user_data.items():
+            if hasattr(user, key) and key not in ['first_name', 'last_name', 'email', 'password', 'is_admin']:
+                setattr(user, key, value)
+
         self.user_repo.update(user_id, user_data)
         return user
 
+    def set_user_admin_status(self, user_id, is_admin):
+        user = self.get_user(user_id)
+        if user:
+            user.is_admin = is_admin
+            self.user_repo.update(user_id, {'is_admin': is_admin})
+            return user
+        return None
 
 
 #===============================================
