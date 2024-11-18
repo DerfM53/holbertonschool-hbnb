@@ -4,6 +4,7 @@
 This module defines the User model.
 """
 
+from flask_bcrypt import generate_password_hash, check_password_hash
 from . import BaseModel
 import re
 import uuid
@@ -35,7 +36,14 @@ class User(BaseModel):
         self._email = None
         self.email = email
         self._is_admin = is_admin
-        self.password = password
+        self._password_hash = None
+        self.set_password(password)
+
+    def set_password(self, password):
+        self._password_hash = generate_password_hash(password).decode('utf-8')
+
+    def check_password(self, password):
+        return check_password_hash(self._password_hash, password)
 
     def to_dict(self):
         """

@@ -6,6 +6,7 @@ This module defines the Place model.
 
 from . import BaseModel
 from .user import User
+from flask import current_app
 
 class Place(BaseModel):
     """
@@ -62,6 +63,11 @@ class Place(BaseModel):
         if not value or len(value) > 100:
             raise ValueError("Your title must be non-empty and not exceed 100 characters")
         self._title = value.strip()
+
+    @property
+    def owner(self):
+        """Retourne l'objet User correspondant à l'ID du propriétaire."""
+        return current_app.facade.get_user(self.owner_id)  # Utilise la façade pour récupérer le propriétaire
 
     @property
     def price(self):
@@ -192,12 +198,8 @@ class Place(BaseModel):
         self.amenities.append(amenity)
 
     def __str__(self):
-        """
-        Return a string representation of the Place.
-        
-        Returns:
-            str: A string describing the place and its owner.
-        """
-        return f"Place: {self.title} (Owner: {self.owner.first_name} {self.owner.last_name})"
-
+        owner = self.owner  # Récupérer l'objet User
+        if owner:
+            return f"Place: {self.title} (Owner: {owner.first_name} {owner.last_name})"
+        return f"Place: {self.title} (Owner not found)"
     

@@ -13,18 +13,30 @@ class HBnBFacade:
         self.review_repo = review_repo
 
     def create_user(self, user_data):
-        new_user = User(**user_data)
-        self.user_repo.add(new_user)
-        return new_user
+        # Vérifier si l'email existe déjà
+        if self.user_repo.find_by_email(user_data['email']):
+            raise ValueError("Email already registered")
+    
+        # Créer un nouvel utilisateur avec le mot de passe
+        new_user = User(
+            first_name=user_data['first_name'],
+            last_name=user_data['last_name'],
+            email=user_data['email'],
+            password=user_data['password']
+        )
+    
+        # Sauvegarder l'utilisateur
+        return self.user_repo.add(new_user)
     
     def get_user(self, user_id):
         user = self.user_repo.get(user_id)
         if user is None:
             print(f"User with ID {user_id} not found")  # Ajoutez ce log pour le débogage
+            raise ValueError("User not found")  # Lever une exception explicite
         return user
     
     def get_user_by_email(self, email):
-        return self.user_repo.get_by_attribute('email', email)
+        return self.user_repo.find_by_email(email)
     
     def update_user(self, user_id, user_data):
         user = self.user_repo.get(user_id)
@@ -78,7 +90,11 @@ class HBnBFacade:
         return new_place
 
     def get_place(self, place_id):
-        return self.place_repo.get(place_id)
+        place = self.place_repo.get(place_id)
+        if place is None:
+            print(f"Place with ID {place_id} not found")  # Log pour le débogage
+            raise ValueError("Place not found")  # Lever une exception explicite
+        return place
 
     def get_all_places(self):
         return self.place_repo.get_all()
@@ -97,10 +113,6 @@ class HBnBFacade:
         if not user or not place:
             raise ValueError("User or Place not found")
     
-        # Vérifiez que la note est dans les limites
-        if not 1 <= review_data['rating'] <= 5:
-            raise ValueError("Rating must be between 1 and 5")
-
         # Créez la nouvelle revue
         new_review = Review(
             text=review_data['text'],

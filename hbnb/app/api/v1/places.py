@@ -5,6 +5,7 @@ This module handles API endpoints related to places.
 It defines routes for creating, retrieving, and updating places.
 """
 
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restx import Namespace, Resource, fields
 from app.services.facade import HBnBFacade
 from flask import current_app
@@ -51,6 +52,7 @@ class PlaceList(Resource):
     """
     Resource for handling operations on the collection of places.
     """
+    @jwt_required()
     @api.expect(place_model)
     @api.response(201, 'Place successfully created')
     @api.response(400, 'Invalid input data')
@@ -58,21 +60,16 @@ class PlaceList(Resource):
     def post(self):
         """
         Register a new place.
-        
-        Returns:
-            tuple: A tuple containing the created place data and the HTTP status code.
         """
+        current_user_id = get_jwt_identity()  # Récupérer l'ID de l'utilisateur authentifié
+        place_data = api.payload
+        place_data['owner_id'] = current_user_id  # Assigner l'ID de l'utilisateur comme propriétaire
+        
         try:
-            place_data = api.payload
             new_place = current_app.facade.create_place(place_data)
             return new_place.to_dict(), 201
         except ValueError as e:
             return {"error": str(e)}, 400
-        except KeyError as e:
-            return {"error": f"Missing required field: {str(e)}"}, 400
-        except Exception as e:
-            print(f"Unexpected error: {str(e)}") #Log pour le debuggage
-            return {"error": "An unexpected error occurred"}, 500
 
     @api.response(200, 'List of places retrieved successfully')
     def get(self):
@@ -117,26 +114,24 @@ class PlaceResource(Resource):
         place_data['reviews'] = [review.to_dict() for review in current_app.facade.get_reviews_by_place(place_id)]
         return place_data, 200
 
-    @api.expect(place_model)
+    @jwt_required()
     @api.response(200, 'Place updated successfully')
     @api.response(404, 'Place not found')
     @api.response(400, 'Invalid input data')
     def put(self, place_id):
         """
         Update a place's information.
-        
-        Args:
-            place_id (str): The ID of the place to update.
-        
-        Returns:
-            tuple: A tuple containing the updated place data and the HTTP status code.
         """
-        place_data = api.payload
+        current_user_id = get_jwt_identity()
         place = current_app.facade.get_place(place_id)
 
         if not place:
-            return {'error': 'Amenity not found'}, 404
+            return {'error': 'Place not found'}, 404
         
+        if place.owner_id != current_user_id:  # Vérifier si l'utilisateur est le propriétaire
+            return {'error': 'You do not have permission to update this place'}, 403
+        
+        place_data = api.payload
         updated_place = current_app.facade.update_place(place_id, place_data)
         return {
             'id': updated_place.id,

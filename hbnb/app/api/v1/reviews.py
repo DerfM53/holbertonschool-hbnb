@@ -7,6 +7,7 @@ It defines routes for creating, retrieving, updating, and deleting reviews.
 
 from flask_restx import Namespace, Resource, fields
 from flask import current_app
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 api = Namespace('reviews', description='Review operations')
 
@@ -23,20 +24,39 @@ class ReviewList(Resource):
     """
     Resource for handling operations on the collection of reviews.
     """
+    @jwt_required()
     @api.expect(review_model)
     @api.response(201, 'Review successfully created')
     @api.response(400, 'Invalid input data')
     def post(self):
         """Register a new review."""
         data = api.payload
+        print(f"Payload received for review creation: {data}")  # Log pour débogage
+        current_user_id = get_jwt_identity()  # Récupérer l'ID de l'utilisateur authentifié
+
+        # Récupérer l'ID de l'utilisateur authentifié
+        print(f"Current user ID: {current_user_id}")  # Log pour débogage
+        # Ajout d'un log pour déboguer les données reçues
+        print(f"Data received for review creation: {data}")  # Log pour débogage
+        
         # Validation pour le texte de la revue
         if not data.get('text'):
             return {'error': 'Text cannot be empty'}, 400
         
+        # Vérifier si l'utilisateur essaie de laisser un avis sur un lieu qu'il possède
+        place = current_app.facade.get_place(data['place_id'])
+        print(f"Place retrieved: {place}")  # Log pour débogage
+        if place and place.owner_id == current_user_id:
+            return {'error': "You cannot review your own place"}, 403
+        
         try:
+            data['user_id'] = current_user_id  # Assigner l'ID de l'utilisateur comme auteur de la revue
             review = current_app.facade.create_review(data)
-            return review.to_dict(), 201
+            response_data = review.to_dict()
+            print(f"Review created: {response_data}")  # Log pour débogage
+            return response_data, 201
         except ValueError as e:
+            print(f"Error creating review: {str(e)}")  # Log pour débogage
             return {'error': str(e)}, 400
 
     @api.response(200, 'List of reviews retrieved successfully')
