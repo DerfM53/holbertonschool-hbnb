@@ -48,3 +48,97 @@ def verify_password(password):
     from app import bcrypt
     """ check password """
     return bcrypt.check_password_hash('password', password)
+
+
+def verify_password(password):
+    from app import bcrypt
+    """ check password """
+    return bcrypt.check_password_hash('password', password)
+
+
+
+user_model = api.model('User', {
+    'email': fields.String(required=True, description='User email'),
+    'password': fields.String(required=True, description='User password'),
+    'first_name': fields.String(required=True, description='User first name'),
+    'last_name': fields.String(required=True, description='User last name')
+})
+
+@api.route('/admin/users')
+class AdminUserManagement(Resource):
+    @jwt_required()
+    @api.expect(user_model)
+    def post(self):
+        """Create a new user (Admin only)"""
+        current_user = get_jwt_identity()
+        if not current_user.get('is_admin'):
+            return {'error': 'Admin privileges required'}, 403
+
+        new_user_data = api.payload
+        try:
+            new_user = facade.create_user(new_user_data)
+            return {'message': 'User created successfully', 'user_id': str(new_user.id)}, 201
+        except Exception as e:
+            return {'error': str(e)}, 400
+
+@api.route('/admin/users/<user_id>')
+class AdminUserModification(Resource):
+    @jwt_required()
+    @api.expect(user_model)
+    def put(self, user_id):
+        """Modify a user's details (Admin only)"""
+        current_user = get_jwt_identity()
+        if not current_user.get('is_admin'):
+            return {'error': 'Admin privileges required'}, 403
+
+        update_data = api.payload
+        try:
+            updated_user = facade.update_user(user_id, update_data)
+            return {'message': 'User updated successfully', 'user': updated_user.to_dict()}, 200
+        except Exception as e:
+            return {'error': str(e)}, 400
+
+@api.route('/admin/users/<user_id>')
+class AdminUserModification(Resource):
+
+
+    @jwt_required()
+    def delete(self, user_id):
+        """Delete a user (Admin only)"""
+        current_user = get_jwt_identity()
+        if not current_user.get('is_admin'):
+            return {'error': 'Admin privileges required'}, 403
+
+        if facade.delete_user(user_id):
+            return {'message': 'User deleted successfully'}, 200
+        else:
+            return {'error': 'User not found'}, 404
+
+@api.route('/admin/users/<user_id>')
+class AdminUserModification(Resource):
+    @jwt_required()
+    def get(self, user_id):
+        """Get user details (Admin only)"""
+        current_user = get_jwt_identity()
+        if not current_user.get('is_admin'):
+            return {'error': 'Admin privileges required'}, 403
+
+        user = facade.get_user(user_id)
+        if user:
+            return user.to_dict(), 200
+        else:
+            return {'error': 'User not found'}, 404
+
+@api.route('/admin/users')
+class AdminUserManagement(Resource):
+    @jwt_required()
+    def get(self):
+        """va list tout les users en admin"""
+        current_user = get_jwt_identity()
+        if not current_user.get('is_admin'):
+            return {'error': 'Admin privileges required'}, 403
+
+        users = facade.get_all_users()
+        return [user.to_dict() for user in users], 200
+
+

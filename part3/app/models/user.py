@@ -53,7 +53,8 @@ class User(BaseModel):
         'email': self.email,
         'created_at': self.created_at.isoformat(),
         'updated_at': self.updated_at.isoformat(),
-        'password': self.password
+        'password': self.password,
+        'is_admin': self.is_admin
     }
 
     def add_places(self, place):
