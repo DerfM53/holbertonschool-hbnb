@@ -22,7 +22,8 @@ class HBnBFacade:
             first_name=user_data['first_name'],
             last_name=user_data['last_name'],
             email=user_data['email'],
-            password=user_data['password']
+            password=user_data['password'],
+            is_admin=user_data.get('is_admin', False)
         )
     
         # Sauvegarder l'utilisateur
@@ -155,3 +156,42 @@ class HBnBFacade:
         self.review_repo.delete(review_id)
         return True
     
+    def is_user_admin(self, user_id):
+        """
+        Vérifie si un utilisateur est un administrateur.
+        
+        Args:
+            user_id (str): L'ID de l'utilisateur à vérifier.
+        
+        Returns:
+            bool: True si l'utilisateur est un administrateur, False sinon.
+        """
+        user = self.get_user(user_id)
+        return user.is_admin if user else False
+
+    def is_review_owner(self, review_id, user_id):
+        """
+        Vérifie si un utilisateur est le propriétaire d'une review.
+        
+        Args:
+            review_id (str): L'ID de la review.
+            user_id (str): L'ID de l'utilisateur.
+        
+        Returns:
+            bool: True si l'utilisateur est le propriétaire de la review, False sinon.
+        """
+        review = self.get_review(review_id)
+        return review.user_id == user_id if review else False
+
+    def can_modify_review(self, review_id, user_id):
+        """
+        Vérifie si un utilisateur peut modifier une review (propriétaire ou admin).
+        
+        Args:
+            review_id (str): L'ID de la review.
+            user_id (str): L'ID de l'utilisateur.
+        
+        Returns:
+            bool: True si l'utilisateur peut modifier la review, False sinon.
+        """
+        return self.is_review_owner(review_id, user_id) or self.is_user_admin(user_id)

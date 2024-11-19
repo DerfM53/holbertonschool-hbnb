@@ -8,6 +8,7 @@ It defines routes for creating, retrieving, updating, and deleting reviews.
 from flask_restx import Namespace, Resource, fields
 from flask import current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from .users import admin_required
 
 api = Namespace('reviews', description='Review operations')
 
@@ -92,10 +93,12 @@ class ReviewResource(Resource):
             return {'message': 'Review not found'}, 404
         return review.to_dict(), 200
     
+    @jwt_required()
     @api.expect(review_model)
     @api.response(200, 'Review updated successfully')
     @api.response(404, 'Review not found')
     @api.response(400, 'Invalid input data')
+    @api.response(403, 'Permission denied')
     def put(self, review_id):
         """
         Update a review's information.
@@ -106,15 +109,22 @@ class ReviewResource(Resource):
         Returns:
             tuple: A tuple containing a success message and the HTTP status code.
         """
+        current_user_id = get_jwt_identity()
+        
+        if not current_app.facade.can_modify_review(review_id, current_user_id):
+            return {'error': 'You do not have permission to update this review'}, 403
+
         data = api.payload
         try:
-            current_app.facade.update_review(review_id, data)
-            return {'message': 'Review updated successfully'}, 200
+            updated_review = current_app.facade.update_review(review_id, data)
+            return updated_review.to_dict(), 200
         except ValueError as e:
-            return {'message': str(e)}, 400
+            return {'error': str(e)}, 400
 
+    @jwt_required()    
     @api.response(200, 'Review deleted successfully')
     @api.response(404, 'Review not found')
+    @api.response(403, 'Permission denied')
     def delete(self, review_id):
         """
         Delete a review.
@@ -125,9 +135,20 @@ class ReviewResource(Resource):
         Returns:
             tuple: A tuple containing a success message and the HTTP status code.
         """
+        current_user_id = get_jwt_identity()
+        current_user = current_app.facade.get_user(current_user_id)
+        review = current_app.facade.get_review(review_id)
+
+        if not review:
+            return {'error': 'Review not found'}, 404
+
+        # Vérifier si l'utilisateur est l'auteur de la review ou un admin
+        if review.user_id != current_user_id and not current_user.is_admin:
+            return {'error': 'You do not have permission to delete this review'}, 403
+
         if current_app.facade.delete_review(review_id):
             return {'message': 'Review deleted successfully'}, 200
-        return {'message': 'Review not found'}, 404
+        return {'error': 'Failed to delete review'}, 500
 
 @api.route('/places/<place_id>/reviews')
 class PlaceReviewList(Resource):

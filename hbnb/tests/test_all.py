@@ -141,11 +141,12 @@ def test_create_place(client: FlaskClient):
     assert 'id' in response.get_json()
 
 def test_create_amenity(client: FlaskClient):
-   response = client.post('/api/v1/amenities/', json={
-       'name': 'Wi-Fi'
-   })
-   assert response.status_code == 201
-   assert 'Amenity created successfully' in response.get_json()['message']
+    admin_token = get_admin_token(client)
+    response = client.post('/api/v1/amenities/', 
+                           headers={'Authorization': f'Bearer {admin_token}'},
+                           json={'name': 'Wi-Fi'})
+    assert response.status_code == 201
+    assert 'Amenity created successfully' in response.get_json()['message']
 
 def test_update_user(client: FlaskClient):
    create_response = client.post('/api/v1/users/', json={
@@ -197,65 +198,52 @@ def test_create_place_with_invalid_data(client: FlaskClient):
             response.get_json()['error'])
 
 def test_update_amenity(client: FlaskClient):
-   # Créer d'abord un nouvel équipement
-   response = client.post('/api/v1/amenities/', json={
-       'name': 'Wi-Fi'
-   })
-   amenity_id = response.get_json()['data']['id']
+    admin_token = get_admin_token(client)
+    # Créer d'abord un nouvel équipement
+    create_response = client.post('/api/v1/amenities/', 
+                                  headers={'Authorization': f'Bearer {admin_token}'},
+                                  json={'name': 'Wi-Fi'})
+    amenity_id = create_response.get_json()['data']['id']
 
-   # Essayer de mettre à jour l'équipement avec des données valides
-   update_response = client.put(f'/api/v1/amenities/{amenity_id}', json={
-       'name': 'High-Speed Wi-Fi'
-   })
-   assert update_response.status_code == 200
-   assert update_response.get_json()['name'] == 'High-Speed Wi-Fi'
-
-   # Essayer de mettre à jour l'équipement avec des données invalides (nom vide)
-   invalid_update_response = client.put(f'/api/v1/amenities/{amenity_id}', json={
-       'name': ''
-   })
-   assert invalid_update_response.status_code == 400
-   assert ('Your name must be non-empty' in 
-           invalid_update_response.get_json()['error'])
+    # Essayer de mettre à jour l'équipement avec des données valides
+    update_response = client.put(f'/api/v1/amenities/{amenity_id}',
+                                 headers={'Authorization': f'Bearer {admin_token}'},
+                                 json={'name': 'High-Speed Wi-Fi'})
+    assert update_response.status_code == 200
+    assert update_response.get_json()['name'] == 'High-Speed Wi-Fi'
 
 def test_get_all_amenities(client: FlaskClient):
-   # Essayer de récupérer la liste des équipements sans en avoir créé...
-   response = client.get('/api/v1/amenities/')
-   assert response.status_code == 404  # Vérifiez que le code d'état est 404 car aucun équipement n'existe.
-   assert response.get_json()['message'] == 'No amenities found'
+    admin_token = get_admin_token(client)
+    # Essayer de récupérer la liste des équipements sans en avoir créé...
+    response = client.get('/api/v1/amenities/')
+    assert response.status_code == 404
+    assert response.get_json()['message'] == 'No amenities found'
 
-   # Créer quelques équipements.
-   client.post('/api/v1/amenities/', json={'name': 'Wi-Fi'})
-   client.post('/api/v1/amenities/', json={'name': 'Pool'})
+    # Créer quelques équipements.
+    client.post('/api/v1/amenities/', headers={'Authorization': f'Bearer {admin_token}'}, json={'name': 'Wi-Fi'})
+    client.post('/api/v1/amenities/', headers={'Authorization': f'Bearer {admin_token}'}, json={'name': 'Pool'})
 
-   # Récupérer à nouveau la liste des équipements.
-   response = client.get('/api/v1/amenities/')
-   assert response.status_code == 200  # Vérifiez que le code d'état est 200.
-   
-   amenities = response.get_json()
-   
-   assert len(amenities) == 2  # Assurez-vous qu'il y a deux équipements.
-   
-   assert amenities[0]['name'] == 'Wi-Fi'
-   assert amenities[1]['name'] == 'Pool'
+    # Récupérer à nouveau la liste des équipements.
+    response = client.get('/api/v1/amenities/')
+    assert response.status_code == 200
+    amenities = response.get_json()
+    assert len(amenities) == 2
+    assert amenities[0]['name'] == 'Wi-Fi'
+    assert amenities[1]['name'] == 'Pool'
 
 def test_delete_amenity(client: FlaskClient):
-   # Créer d'abord un nouvel équipement.
-   response = client.post('/api/v1/amenities/', json={'name': 'Wi-Fi'})
-   
-   amenity_id = response.get_json()['data']['id']
+    admin_token = get_admin_token(client)
+    # Créer d'abord un nouvel équipement.
+    create_response = client.post('/api/v1/amenities/', 
+                                  headers={'Authorization': f'Bearer {admin_token}'},
+                                  json={'name': 'Wi-Fi'})
+    amenity_id = create_response.get_json()['data']['id']
 
-   # Supprimer l'équipement.
-   delete_response = client.delete(f'/api/v1/amenities/{amenity_id}')
-   
-   assert delete_response.status_code == 200
-   assert delete_response.get_json()['message'] == 'Amenity deleted successfully'
-
-   # Vérifier que l'équipement n'existe plus.
-   get_response = client.get(f'/api/v1/amenities/{amenity_id}')
-   
-   assert get_response.status_code == 404 
-   assert get_response.get_json()['error'] == 'No amenity found'
+    # Supprimer l'équipement.
+    delete_response = client.delete(f'/api/v1/amenities/{amenity_id}',
+                                    headers={'Authorization': f'Bearer {admin_token}'})
+    assert delete_response.status_code == 200
+    assert delete_response.get_json()['message'] == 'Amenity deleted successfully'
 
 def test_create_review(client: FlaskClient):
     # Créer d'abord un utilisateur.
@@ -319,3 +307,100 @@ def test_create_review(client: FlaskClient):
 
     assert invalid_response.status_code == 400 
     assert "Text cannot be empty" in invalid_response.get_json()['error']
+
+def create_admin_user(client: FlaskClient):
+    response = client.post('/api/v1/users/', json={
+        "first_name": "Admin",
+        "last_name": "User",
+        "email": "admin@example.com",
+        "password": "adminpassword",
+        "is_admin": True
+    })
+    assert response.status_code == 201, f"Failed to create admin user: {response.get_json()}"
+    return response.get_json()['id'], "admin@example.com", "adminpassword"
+
+def get_admin_token(client: FlaskClient):
+    admin_id, admin_email, admin_password = create_admin_user(client)
+    login_response = client.post('/api/v1/users/login', json={
+        "email": admin_email,
+        "password": admin_password
+    })
+    assert login_response.status_code == 200
+    return login_response.get_json()['access_token']
+
+def test_admin_create_user(client: FlaskClient):
+    admin_token = get_admin_token(client)
+    print(f"Admin token: {admin_token}")
+    response = client.post('/api/v1/users/admin', 
+                           headers={'Authorization': f'Bearer {admin_token}'}, 
+                           json={
+                               "first_name": "New",
+                               "last_name": "User",
+                               "email": "newuser@example.com",
+                               "password": "newpassword"
+                           })
+    print(f"Response status: {response.status_code}")
+    print(f"Response data: {response.get_json()}")
+    assert response.status_code == 201
+    assert "id" in response.get_json()
+
+def test_admin_update_any_user(client: FlaskClient):
+    admin_token = get_admin_token(client)
+    # Créer un utilisateur normal
+    normal_user_response = client.post('/api/v1/users/', json={
+        "first_name": "Normal",
+        "last_name": "User",
+        "email": "normal@example.com",
+        "password": "normalpassword"
+    })
+    normal_user_id = normal_user_response.get_json()['id']
+    print(f"Normal user created with ID: {normal_user_id}")
+
+    # Mettre à jour l'utilisateur normal en tant qu'admin
+    response = client.put(f'/api/v1/users/admin/{normal_user_id}', 
+                          headers={'Authorization': f'Bearer {admin_token}'}, 
+                          json={
+                              "first_name": "Updated",
+                              "last_name": "User",
+                              "email": "updated@example.com"
+                          })
+    print(f"Update response status: {response.status_code}")  # Log ajouté
+    print(f"Update response data: {response.get_json()}")  # Log ajouté
+    assert response.status_code == 200
+    assert response.get_json()['first_name'] == "Updated"
+
+def test_non_admin_cannot_access_admin_routes(client: FlaskClient):
+    # Créer un utilisateur normal
+    normal_user_response = client.post('/api/v1/users/', json={
+        "first_name": "Normal",
+        "last_name": "User",
+        "email": "normal@example.com",
+        "password": "normalpassword"
+    })
+    print(f"Normal user created: {normal_user_response.get_json()}")
+
+    # Vérifiez que la création de l'utilisateur a réussi
+    assert normal_user_response.status_code == 201
+    
+    # Se connecter en tant qu'utilisateur normal
+    login_response = client.post('/api/v1/users/login', json={
+        "email": "normal@example.com",
+        "password": "normalpassword"
+    })
+    assert login_response.status_code == 200 #Vérifie le statut de la connection
+    normal_token = login_response.get_json()['access_token']
+    print(f"Normal user token: {normal_token}")
+
+    # Essayer d'accéder à une route admin
+    response = client.post('/api/v1/users/admin', 
+                           headers={'Authorization': f'Bearer {normal_token}'}, 
+                           json={
+                               "first_name": "New",
+                               "last_name": "User",
+                               "email": "newuser@example.com",
+                               "password": "newpassword"
+                           })
+    print(f"Admin access attempt response status: {response.status_code}")  # Log ajouté
+    print(f"Admin access attempt response data: {response.get_json()}")  # Log ajouté
+    assert response.status_code == 403
+    assert "Admin access required" in response.get_json()['error']

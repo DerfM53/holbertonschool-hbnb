@@ -9,6 +9,7 @@ It defines routes for creating, retrieving, and updating amenities.
 from flask_restx import Namespace, Resource, fields
 from app.services.facade import HBnBFacade
 from flask import current_app
+from app.api.v1.users import admin_required
 
 api = Namespace('amenities', description='Amenity operations')
 
@@ -23,6 +24,7 @@ class AmenityList(Resource):
     """
     Resource for handling operations on the collection of amenities.
     """
+    @admin_required()
     @api.expect(amenity_model)
     @api.response(201, 'Amenity successfully created')
     @api.response(400, 'Invalid input data')
@@ -65,6 +67,7 @@ class AmenityResource(Resource):
     """
     Resource for handling operations on individual amenities.
     """
+    @admin_required()
     @api.response(200, 'Amenity details retrieved successfully')
     @api.response(404, 'Amenity not found')
     def get(self, amenity_id):

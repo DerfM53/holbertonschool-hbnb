@@ -7,9 +7,23 @@ It defines routes for creating and retrieving user information.
 
 from flask_restx import Namespace, Resource, fields
 from flask import current_app
-from flask_jwt_extended import create_access_token, jwt_required
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from functools import wraps
 
 api = Namespace('users', description='User operations')
+
+def admin_required():
+    def wrapper(fn):
+        @wraps(fn)
+        @jwt_required()
+        def decorator(*args, **kwargs):
+            current_user_id = get_jwt_identity()
+            current_user = current_app.facade.get_user(current_user_id)
+            if not current_user.is_admin:
+                return {'error': 'Admin access required'}, 403
+            return fn(*args, **kwargs)
+        return decorator
+    return wrapper
 
 # Define the user model for input validation and documentation
 user_model = api.model('User', {
@@ -138,3 +152,35 @@ class UserByEmail(Resource):
         if not user:
             return {'error': 'User not found'}, 404
         return user.to_dict(), 200
+    
+@api.route('/admin')
+class AdminUserList(Resource):
+    @admin_required()
+    @api.expect(user_model)
+    @api.response(201, 'User successfully created')
+    def post(self):
+        """Create a new user (admin only)"""
+        print("Admin create user route accessed")
+        try:
+            new_user = current_app.facade.create_user(api.payload)
+            print(f"New user created: {new_user.to_dict()}")
+            return new_user.to_dict(), 201
+        except ValueError as e:
+            print(f"Error creating user: {str(e)}")
+            return {"error": str(e)}, 400
+
+@api.route('/admin/<user_id>')
+class AdminUserResource(Resource):
+    @admin_required()
+    @api.expect(user_model)
+    @api.response(200, 'User updated successfully')
+    def put(self, user_id):
+        """Update any user's information (admin only)"""
+        print(f"Admin update user route accessed for user_id: {user_id}")
+        try:
+            updated_user = current_app.facade.update_user(user_id, api.payload)
+            print(f"User updated: {updated_user.to_dict()}")
+            return updated_user.to_dict(), 200
+        except ValueError as e:
+            
+            return {"error": str(e)}, 400

@@ -53,4 +53,5 @@ def create_app(config_name='default'):
     api.add_namespace(places_ns, path='/api/v1/places')
     api.add_namespace(reviews_ns, path='/api/v1/reviews')
 
+
     return app

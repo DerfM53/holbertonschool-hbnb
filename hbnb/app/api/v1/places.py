@@ -123,12 +123,13 @@ class PlaceResource(Resource):
         Update a place's information.
         """
         current_user_id = get_jwt_identity()
+        current_user = current_app.facade.get_user(current_user_id)
         place = current_app.facade.get_place(place_id)
 
         if not place:
             return {'error': 'Place not found'}, 404
         
-        if place.owner_id != current_user_id:  # Vérifier si l'utilisateur est le propriétaire
+        if place.owner_id != current_user_id and not current_user.is_admin:  # Vérifier si l'utilisateur est le propriétaire
             return {'error': 'You do not have permission to update this place'}, 403
         
         place_data = api.payload
