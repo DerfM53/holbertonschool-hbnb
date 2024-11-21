@@ -1,6 +1,7 @@
 :::mermaid
 
 classDiagram
+
     class User {
         +String id
         +String first_name
@@ -38,4 +39,5 @@ classDiagram
     Amenity "0..*" --> "0..*" Place : available at
     Review "1" --> "1" User : written by
     Review "1" --> "1" Place : for
+    
 :::
