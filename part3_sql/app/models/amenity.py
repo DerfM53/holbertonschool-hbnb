@@ -17,6 +17,7 @@ class Amenity(BaseModel):
     #amenities = []
     __tablename__ = "amenities"
     name = db.Column(db.String(50), nullable=False)
+    places = db.relationship('Place', secondary='place_amenity', back_populates='amenities')
 
     def amenity_to_dict(self):
         """Return a dictionary representation of the Amenity instance."""

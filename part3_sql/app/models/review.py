@@ -25,7 +25,10 @@ class Review(BaseModel):
 
     text = db.Column(db.String(180), nullable=False)
     rating = db.Column(db.Integer, nullable=False)
-
+    place_id = db.Column(db.String(36), db.ForeignKey('places.id'), nullable=False)
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
+    place = db.relationship('Place', back_populates='reviews')
+    user = db.relationship('User', back_populates='reviews')
 
     def review_to_dict(self):
         return {

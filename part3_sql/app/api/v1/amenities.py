@@ -79,3 +79,4 @@ class AmenityResource(Resource):
             "created_at": amenity.created_at.isoformat(),
             "updated_at": amenity.updated_at.isoformat()
         }, 201
+

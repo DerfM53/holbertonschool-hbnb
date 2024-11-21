@@ -75,6 +75,18 @@ class HBnBFacade:
     def get_all_amenities(self):
         return self.amenity_repo.get_all()
 
+    def get_amenity_by_attribut(self, name):
+        amenities = self.amenity_repo.get_all()
+        for amenity in amenities:
+            if amenity.name == name:
+                return amenity
+        return None
+    def get_amenity_by_place(self, place_id):
+        place = self.place_repo.get(place_id)
+        if place:
+            return place.amenities
+        return None
+
 #===================================================
 #handling place facade
 

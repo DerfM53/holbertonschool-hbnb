@@ -14,6 +14,12 @@ if TYPE_CHECKING:
     from models.review import Review
     from models.amenity import Amenity
 
+place_amenity = db.Table(
+    'place_amenity',
+    db.Column('place_id', db.String(36), db.ForeignKey('places.id'), primary_key=True),
+    db.Column('amenity_id', db.String(36), db.ForeignKey('amenities.id'), primary_key=True)
+     )
+
 class Place(BaseModel):
     """
     Represents a place class to creat place objects.
@@ -27,11 +33,12 @@ class Place(BaseModel):
     price = db.Column(db.Float, nullable=False)
     latitude = db.Column(db.Float, nullable=False)
     longitude = db.Column(db.Float, nullable=False)
-
+    reviews = db.relationship('Review', back_populates='place', cascade="all, delete-orphan", lazy=True)
+    amenities = db.relationship('Amenity', secondary=place_amenity, back_populates='places', lazy=True)
         #self.reviews = reviews if reviews is not None else []
         #self.amenities = amenities if amenities is not None else []
-    owner = relationship('User', backref='places', lazy=True)
-    
+    owner = db.relationship('User', back_populates='places', lazy=True)
+
     def add_review(self, review):
         """Add a review to the place."""
         self.reviews.append(review)

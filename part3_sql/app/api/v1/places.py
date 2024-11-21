@@ -137,7 +137,7 @@ class PlaceResource(Resource):
 @api.route('/user/<user_id>/places')
 class UserPlacesResource(Resource):
 
-
+    @jwt_required()
     @api.response(200, 'Places retrieved successfully')
     @api.response(404, 'User not found')
     def get(self, user_id):
@@ -158,3 +158,41 @@ class UserPlacesResource(Resource):
                 'longitude': place.longitude,
                 'owner': facade.get_user(place.owner_id)}
                 for place in places], 200
+
+@api.route('/<place_id>/amenities')
+class PlacesResourcesAmenities(Resource):
+    @jwt_required()
+    @api.expect(amenity_model)
+    @api.response(200, 'Amenity successfully added to the place')
+    @api.response(400, 'Invalid input data')
+    @api.response(404, 'Place or Amenity not found')
+
+    def post(self, place_id):
+        """
+    ADD AMENTIES TO A PLACE ID
+    """
+        current_user = get_jwt_identity()
+        place = facade.get_place(place_id)
+        if not place:
+            return {'error': "place not found"}, 404
+        data = api.payload
+        if not data or 'name' not in data:
+            return {'error': "Field 'name' is required"}, 400
+
+        # Retrieve or create the amenity
+        amenity_name = data['name']
+        amenity = facade.get_amenity_by_attribut(amenity_name)
+        if not amenity:
+            return {'error': f"Amenity '{amenity_name}' does not exists"}, 404
+
+        # Add the amenity to the place
+        if amenity not in place.amenities:
+            place.amenities.append(amenity)
+            facade.update_place(place_id, {'amenities': place.amenities})
+
+        return {
+            'message': f"Amenity '{amenity_name}' added successfully to place '{place.title}'",
+            'place_id': place_id,
+            'amenities': [a.name for a in place.amenities]
+        }, 200
+
